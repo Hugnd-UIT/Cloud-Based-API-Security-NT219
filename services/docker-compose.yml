@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: payshield_app
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: payshield_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: payshield
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - payshield_mysql_data:/var/lib/mysql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: payshield_keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+
+volumes:
+  payshield_mysql_data:
