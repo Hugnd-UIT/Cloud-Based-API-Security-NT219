@@ -17,10 +17,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: payshield
       MYSQL_ROOT_PASSWORD: secret
     volumes:
       - payshield_mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.0
@@ -30,6 +30,12 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://db:3306/QlyKeyCloak
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: secret
+    depends_on:
+      - db
     command: start-dev
 
 volumes:
