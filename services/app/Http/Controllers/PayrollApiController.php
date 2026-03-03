@@ -8,8 +8,15 @@ use Carbon\Carbon;
 
 class PayrollApiController extends Controller
 {
-    public function index(Request $request)
+    public function getPayroll(Request $request)
     {
+        // Phân quyền xem bảng lương
+        $role = $request->get('user_roles');
+
+        if (!in_array('manager', $role)) {
+            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+        }
+
         $month = $request->query('month', Carbon::now()->month);
         $year  = $request->query('year', Carbon::now()->year);
 

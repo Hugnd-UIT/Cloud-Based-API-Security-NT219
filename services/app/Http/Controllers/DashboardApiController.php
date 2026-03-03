@@ -9,7 +9,14 @@ use Carbon\Carbon;
 
 class DashboardApiController extends Controller
 {
-    public function get_manager_data() {
+    public function getManagerDashboard(Request $request) {
+        // Phân quyền xem dashboard quản lý
+        $role = $request->get('user_roles');
+
+        if (!in_array('manager', $role)) {
+            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+        }
+
         $current_time = Carbon::now();
         $current_month = $current_time->month;
         $current_year = $current_time->year;
@@ -44,20 +51,30 @@ class DashboardApiController extends Controller
         ]);
     }
 
-    public function get_employee_data() {
+    public function getEmployeeDashboard(Request $request) {
         return response()->json([
             'status' => true,
             'data' => [
                 'notifications' => [
                     [
-                        'title' => 'Lịch bảo trì hệ thống PayShield',
-                        'date' => '15/02/2026',
-                        'content' => 'Hệ thống sẽ tạm ngưng hoạt động từ 22:00 đến 23:00 tối nay để nâng cấp bảo mật Keycloak.'
+                        'title' => 'Quy định mới về bảo mật mật khẩu',
+                        'date' => '10/02/2026',
+                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
                     ],
                     [
-                        'title' => 'Thông báo về việc trả lương tháng 2',
-                        'date' => '14/02/2026',
-                        'content' => 'Lương tháng 2 sẽ được chuyển vào ngày 28/02. Vui lòng kiểm tra lại số tài khoản trong mục Hồ sơ.'
+                        'title' => 'Quy định mới về bảo mật mật khẩu',
+                        'date' => '10/02/2026',
+                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
+                    ],
+                    [
+                        'title' => 'Quy định mới về bảo mật mật khẩu',
+                        'date' => '10/02/2026',
+                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
+                    ],
+                    [
+                        'title' => 'Quy định mới về bảo mật mật khẩu',
+                        'date' => '10/02/2026',
+                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
                     ],
                     [
                         'title' => 'Quy định mới về bảo mật mật khẩu',

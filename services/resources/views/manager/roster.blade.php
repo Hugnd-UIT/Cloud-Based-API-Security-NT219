@@ -143,7 +143,7 @@
                 document.getElementById('NGAYVAOLAM').value = emp.NGAYVAOLAM || '';
             })
             .catch(err => alert("Error: " + err));
-    }
+        }
 
     window.save_employee = function(e) {
         e.preventDefault();

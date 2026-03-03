@@ -117,7 +117,7 @@
                 });
             })
             .catch(err => console.error("Error:", err));
-    }
+        }
 
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date();

@@ -131,7 +131,7 @@
                 document.getElementById('stat_bonus').innerHTML = errorHtml;
                 document.getElementById('stat_fine').innerHTML = errorHtml;
             });
-    });
+        });
 
     function renderChart(data) {
         const ctx = document.getElementById('payrollChart').getContext('2d');

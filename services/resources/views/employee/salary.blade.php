@@ -141,10 +141,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        const pathArray = window.location.pathname.split('/');
-        const manv = pathArray[pathArray.length - 2]; 
-
-        fetch('/api/salary/' + manv)
+        fetch('/api/salary')
             .then(response => response.json())
             .then(res => {
                 if(res.status) {
@@ -157,6 +154,6 @@
                 }
             })
             .catch(err => console.error("Lỗi:", err));
-    });
+        });
 </script>
 @endpush

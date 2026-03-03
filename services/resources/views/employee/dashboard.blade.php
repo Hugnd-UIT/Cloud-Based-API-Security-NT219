@@ -84,7 +84,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Gọi API lấy thông báo của Nhân viên
         fetch('/api/dashboard/employee-data')
             .then(response => response.json())
             .then(res => {
@@ -129,6 +128,6 @@
                         <p class="font-medium">Có lỗi xảy ra khi kết nối máy chủ. Vui lòng thử lại sau.</p>
                     </div>`;
             });
-    });
+        });
 </script>
 @endpush

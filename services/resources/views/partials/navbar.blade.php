@@ -16,26 +16,26 @@
         
         <div class="hidden md:flex items-center gap-6">
             @if($isManager)
-                <a href="/manager/{{ $manv }}/dashboard" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/dashboard') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/manager/dashboard" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/dashboard') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-chart-pie"></i> Tổng quan
                 </a>
-                <a href="/manager/{{ $manv }}/roster" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/roster') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/manager/roster" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/roster') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-users"></i> Nhân sự
                 </a>
-                <a href="/manager/{{ $manv }}/payroll" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/payroll') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/manager/payroll" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/payroll') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-file-invoice-dollar"></i> Quản lý Lương
                 </a>
-                <a href="/manager/{{ $manv }}/profile" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/profile') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/manager/profile" class="flex items-center gap-2 py-2 {{ request()->is('manager/*/profile') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-user-tie"></i> Hồ sơ
                 </a>
             @else
-                <a href="/employee/{{ $manv }}/dashboard" class="flex items-center gap-2 py-2 {{ request()->is('employee/*/dashboard') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/employee/dashboard" class="flex items-center gap-2 py-2 {{ request()->is('employee/*/dashboard') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-home"></i> Trang chủ
                 </a>
-                <a href="/employee/{{ $manv }}/salary" class="flex items-center gap-2 py-2 {{ request()->is('employee/*/salary') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/employee/salary" class="flex items-center gap-2 py-2 {{ request()->is('employee/*/salary') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-wallet"></i> Bảng lương
                 </a>
-                <a href="/employee/{{ $manv }}/profile" class="flex items-center gap-2 py-2 {{ request()->is('employee/*/profile') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
+                <a href="/employee/profile" class="flex items-center gap-2 py-2 {{ request()->is('employee/*/profile') ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 font-medium transition border-b-2 border-transparent hover:border-blue-600' }}">
                     <i class="fas fa-id-card"></i> Hồ sơ của tôi
                 </a>
             @endif

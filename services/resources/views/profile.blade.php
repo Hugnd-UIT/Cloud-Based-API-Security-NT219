@@ -112,14 +112,8 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const pathArray = window.location.pathname.split('/');
-        const manv = pathArray[pathArray.length - 2];
-
-        const linkSalary = document.getElementById('link_salary');
-        if(linkSalary) linkSalary.href = '/employee/' + manv + '/salary';
-
-        // Gọi API
-        fetch('/api/profile/' + manv)
+        if(linkSalary) linkSalary.href = '/employee/salary';
+        fetch('/api/profile')
             .then(response => response.json())
             .then(res => {
                 if(res.status) {
@@ -151,6 +145,6 @@
                 }
             })
             .catch(err => console.error("Lỗi:", err));
-    });
+        });
 </script>
 @endpush
