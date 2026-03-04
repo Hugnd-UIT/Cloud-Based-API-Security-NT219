@@ -17,15 +17,10 @@ class ProfileApiController extends Controller
             return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
         }
 
-        $employee = Employee::whereHas('user', function($query) use ($email) {
-            $query->where('EMAIL', $email);
-        })->first();
+        $employee = Employee::where('EMAIL', $email)->first();
 
         if (!$employee) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Không tìm thấy nhân viên này trên hệ thống!'
-            ], 404);
+            return response()->json(['message' => 'Không tìm thấy dữ liệu nhân viên'], 404);
         }
 
         return response()->json([

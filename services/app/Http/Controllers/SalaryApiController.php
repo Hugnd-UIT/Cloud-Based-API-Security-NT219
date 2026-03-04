@@ -16,17 +16,12 @@ class SalaryApiController extends Controller
             return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
         }
 
-        $employee = Employee::whereHas('user', function($query) use ($email) {
-            $query->where('EMAIL', $email);
-        })->with(['salaries' => function($query) {
+        $employee = Employee::with(['salaries' => function($query) {
             $query->orderBy('NAM', 'desc')->orderBy('THANG', 'desc');
-        }])->first();
+        }])->where('EMAIL', $email)->first();
 
         if (!$employee) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Không tìm thấy dữ liệu lương của nhân viên này!'
-            ], 404);
+            return response()->json(['message' => 'Không tìm thấy dữ liệu nhân viên'], 404);
         }
 
         return response()->json([

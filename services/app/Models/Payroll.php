@@ -7,18 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Payroll extends Model
 {
     protected $fillable = [
+        'NAM',
         'MANV',
         'THANG',
-        'NAM',
         'TIENPHAT',
-        'TIENLUONGCB',
         'TIENTHUONG',
-        'TIENLUONGTL',
-        'SONGAYCONG'
+        'SONGAYCONG',
+        'TIENLUONGCB',
+        'TIENLUONGTL'
     ];
 
     public function employee() {
         return $this->belongsTo(Employee::class, 'MANV', 'MANV');
     }
-
 }
