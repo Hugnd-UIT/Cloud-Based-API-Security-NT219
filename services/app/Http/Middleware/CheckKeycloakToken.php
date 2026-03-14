@@ -41,11 +41,12 @@ class CheckKeycloakToken
             // Giải mã token
             $decoded_token = JWT::decode($token, new Key($public_key, 'RS256'));
             
-            // Gán email vào request
-            $request->attributes->add(['user_email' => $decoded_token->email]);
-            // Gán role vào request
-            $request->attributes->add(['user_roles' => $decoded_token->realm_access->roles ?? []]);
-
+            $request->merge([
+                // Gán email vào request
+                'user_email' => $decoded_token->email ?? null,
+                // Gán role vào request
+                'user_roles' => $decoded_token->realm_access->roles ?? []
+            ]);
             // Thả request tiếp tục vào Controller
             return $next($request);
 

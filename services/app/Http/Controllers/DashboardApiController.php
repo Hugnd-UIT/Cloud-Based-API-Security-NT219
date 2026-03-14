@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Payroll;
 use Carbon\Carbon;
@@ -17,36 +18,20 @@ class DashboardApiController extends Controller
             return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
         }
 
-        $current_time = Carbon::now();
-        $current_month = $current_time->month;
-        $current_year = $current_time->year;
+        $month = Carbon::now()->month;
+        $year = Carbon::now()->year;
 
-        $total_employees = Employee::where('TRANGTHAI', 1)->count();
-
-        $total_salary = Payroll::where('THANG', $current_month)->where('NAM', $current_year)->sum('TIENLUONGTL');
-
-        $total_bonus = Payroll::where('THANG', $current_month)->where('NAM', $current_year)->sum('TIENTHUONG');
-
-        $total_fine = Payroll::where('THANG', $current_month)->where('NAM', $current_year)->sum('TIENPHAT');
-    
-        $chart_data = Payroll::selectRaw('CONCAT(THANG, "/", NAM) as label, SUM(TIENLUONGTL) as value')
-                                ->groupBy('NAM', 'THANG')
-                                ->orderBy('NAM', 'asc') 
-                                ->orderBy('THANG', 'asc')
-                                ->limit(6)
-                                ->get();
+        $stats = Payroll::where('THANG', $month)->where('NAM', $year)
+            ->selectRaw('COALESCE(SUM(TIENLUONGTL), 0) as salary, COALESCE(SUM(TIENTHUONG), 0) as bonus, COALESCE(SUM(TIENPHAT), 0) as fine')
+            ->first();
 
         return response()->json([
             'status' => true,
-            'message' => 'Success',
             'data' => [
-                'card_stats' => [
-                    'total_employees' => $total_employees,
-                    'total_salary' => $total_salary,
-                    'total_bonus' => $total_bonus,
-                    'total_fine' => $total_fine
-                ],
-                'chart_stats' => $chart_data
+                'total_employees' => Employee::where('TRANGTHAI', 1)->count(),
+                'total_salary'    => (float) $stats->salary,
+                'total_bonus'     => (float) $stats->bonus,
+                'total_fine'      => (float) $stats->fine
             ]
         ]);
     }
@@ -55,33 +40,10 @@ class DashboardApiController extends Controller
         return response()->json([
             'status' => true,
             'data' => [
-                'notifications' => [
-                    [
-                        'title' => 'Quy định mới về bảo mật mật khẩu',
-                        'date' => '10/02/2026',
-                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
-                    ],
-                    [
-                        'title' => 'Quy định mới về bảo mật mật khẩu',
-                        'date' => '10/02/2026',
-                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
-                    ],
-                    [
-                        'title' => 'Quy định mới về bảo mật mật khẩu',
-                        'date' => '10/02/2026',
-                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
-                    ],
-                    [
-                        'title' => 'Quy định mới về bảo mật mật khẩu',
-                        'date' => '10/02/2026',
-                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
-                    ],
-                    [
-                        'title' => 'Quy định mới về bảo mật mật khẩu',
-                        'date' => '10/02/2026',
-                        'content' => 'Yêu cầu toàn bộ nhân viên đổi mật khẩu định kỳ 3 tháng/lần. Mật khẩu phải bao gồm chữ hoa, chữ thường và ký tự đặc biệt.'
-                    ]
-                ]
+                ['title' => 'Thông báo 1', 'date' => '01/01/2026', 'content' => 'Nội dung 1'],
+                ['title' => 'Thông báo 2', 'date' => '02/01/2026', 'content' => 'Nội dung 2'],
+                ['title' => 'Thông báo 3', 'date' => '03/01/2026', 'content' => 'Nội dung 3'],
+                ['title' => 'Thông báo 4', 'date' => '04/01/2026', 'content' => 'Nội dung 4']
             ]
         ]);
     }

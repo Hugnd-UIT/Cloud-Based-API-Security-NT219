@@ -82,6 +82,7 @@ class RosterApiController extends Controller
 
         $employee = Employee::find($id);
         if ($employee) {
+            \App\Models\Payroll::where('MANV', $id)->delete();
             $employee->delete();
             return response()->json(['success' => true]);
         }

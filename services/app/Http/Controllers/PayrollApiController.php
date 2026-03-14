@@ -25,7 +25,7 @@ class PayrollApiController extends Controller
                     ->where('NAM', $year)
                     ->get();
 
-        $formatted_list = $payroll_list->map(function ($p) {
+        $list = $payroll_list->map(function ($p) {
             $status = $p->TIENLUONGTL > 0 ? 'paid' : 'pending';
             return [
                 'name'   => $p->employee ? $p->employee->HOTEN : ($p->MANV ?? 'Unknown'),
@@ -39,15 +39,14 @@ class PayrollApiController extends Controller
         });
 
         $summary_data = [
-            'total_cost'    => $formatted_list->sum('total'),
-            'total_paid'    => $formatted_list->where('status', 'paid')->sum('total'),
-            'total_pending' => $formatted_list->where('status', 'pending')->sum('total'),
+            'total_cost'    => $list->sum('total'),
+            'total_paid'    => $list->where('status', 'paid')->sum('total'),
+            'total_pending' => $list->where('status', 'pending')->sum('total'),
         ];
 
         return response()->json([
-            'filter'  => ['month' => $month, 'year' => $year], 
-            'summary' => $summary_data,
-            'list'    => $formatted_list
+            'status' => true,
+            'data' => $list
         ]);
     }
 }

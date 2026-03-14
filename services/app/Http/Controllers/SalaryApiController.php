@@ -26,10 +26,7 @@ class SalaryApiController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => [
-                'employee' => $employee,
-                'payrolls' => $employee->salaries
-            ]
+            'data' => $employee->salaries
         ]);
     }
 }

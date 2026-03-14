@@ -1,0 +1,90 @@
+### Web URL
+@URL = http://localhost:8000/api
+
+### Keycloak URL
+@Keycloak = http://localhost:8080/realms/payshield-realm/protocol/openid-connect/token
+
+### Secret Client
+@Secret = Xvo813dfhbGAPgxW9KzThgsdbgxHKJxS
+
+# @name Login
+POST {{Keycloak}}
+Content-Type: application/x-www-form-urlencoded
+
+client_id=payshield-app
+&client_secret={{Secret}}
+&grant_type=password
+&username=employee-example@payshield.com
+&password=example
+
+### Token
+@Token = {{Login.response.body.access_token}}
+
+### GET Dashboard Manager
+GET {{URL}}/dashboard/manager-data
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### GET Roster
+GET {{URL}}/employees
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### GET Employees
+GET {{URL}}/employees/NV000
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### POST Employees
+POST {{URL}}/employees
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "MANV": "NV000",
+    "EMAIL": "employee-example@payshield.com",
+    "HOTEN": "Example Employee",
+    "NGAYSINH": "2000-01-01",
+    "GIOITINH": "Example",
+    "CCCD": "000111222333",
+    "SDT": "0123456789",
+    "CHUCVU": "Example",
+    "NGAYVAOLAM": "200-01-01",
+    "TRANGTHAI": 1
+}
+
+### PUT Employees
+PUT {{URL}}/employees/NV000
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "CHUCVU": "Example"
+}
+
+### DELETE Employees
+DELETE {{URL}}/employees/NV000
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### GET payroll
+GET {{URL}}/payrolls?month=3&year=2026
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### GET Dashboard Employee
+GET {{URL}}/dashboard/employee-data
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### GET Profile
+GET {{URL}}/profile
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### GET Salary
+GET {{URL}}/salary
+Authorization: Bearer {{Token}}
+Accept: application/json
