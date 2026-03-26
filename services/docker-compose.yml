@@ -1,0 +1,112 @@
+services:
+  app:
+    build: .
+    container_name: payshield_app
+    ports:
+      - "8081:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_started
+      vault:
+        condition: service_started
+    command: sh -c "sleep 5 && php vault-sync.php && php artisan config:clear && apache2-foreground"
+
+  db:
+    image: mysql:8.0
+    container_name: payshield_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: QlyLuong
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - payshield_mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: payshield_keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: ${KC_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://db:3306/QlyKeyCloak
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - db
+    command: start-dev
+
+  kong:
+    image: kong:3.4-ubuntu
+    container_name: payshield_kong
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_VAULT_HCV_PROTOCOL: http
+      KONG_VAULT_HCV_HOST: payshield_vault
+      KONG_VAULT_HCV_PORT: 8200
+      KONG_VAULT_HCV_TOKEN: root
+      KONG_VAULT_HCV_KV: v2
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../gateway/kong.yml:/usr/local/kong/declarative/kong.yml
+    depends_on:
+      vault:
+        condition: service_started
+  
+  waf:
+    image: owasp/modsecurity-crs:nginx
+    container_name: payshield_waf
+    ports:
+      - "8888:8080"
+    environment:
+      MODSEC_RULE_ENGINE: "On"
+      BACKEND: "http://payshield_kong:8000"
+      PARANOIA: 3                   
+      ANOMALY_INBOUND: 3   
+      ANOMALY_OUTBOUND: 3
+      ALLOWED_METHODS: "GET HEAD POST PUT DELETE OPTIONS"
+    depends_on:
+      - kong
+
+  vault:
+    image: hashicorp/vault:1.13.3
+    container_name: payshield_vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "root"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+      VAULT_TOKEN: "root"
+    volumes:
+      - ./secrets.json:/secrets.json
+    cap_add:
+      - IPC_LOCK
+    command: >
+      sh -c "vault server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200 & 
+             sleep 2 && 
+             vault kv put secret/payshield @/secrets.json && 
+             wait"
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    container_name: payshield_swagger
+    ports:
+      - "6868:8080"
+    environment:
+      SWAGGER_JSON: /docs/OpenAPI.yml
+      OAUTH_USE_PKCE: "true" 
+    volumes:
+      - ../docs:/docs
+
+volumes:
+  payshield_mysql_data:

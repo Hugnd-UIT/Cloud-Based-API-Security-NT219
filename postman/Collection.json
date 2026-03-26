@@ -1,0 +1,448 @@
+{
+  "info": {
+    "_postman_id": "11a9a0a2-6d66-438f-bea8-7507026c1c09",
+    "name": "API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50000228",
+    "_collection_link": "https://go.postman.co/collection/50000228-11a9a0a2-6d66-438f-bea8-7507026c1c09?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Dashboard Manager",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/dashboard/manager-data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "dashboard",
+            "manager-data"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Roster",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Employees",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees/NV000",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees",
+            "NV000"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Employees",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"MANV\": \"NV000\",\r\n    \"EMAIL\": \"employee-example@payshield.com\",\r\n    \"HOTEN\": \"Example Employee\",\r\n    \"NGAYSINH\": \"2000-01-01\",\r\n    \"GIOITINH\": \"Example\",\r\n    \"CCCD\": \"000111222333\",\r\n    \"SDT\": \"0123456789\",\r\n    \"CHUCVU\": \"Example\",\r\n    \"NGAYVAOLAM\": \"2000-01-01\",\r\n    \"TRANGTHAI\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8888/api/employees",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Employees",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"CHUCVU\": \"Example\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8888/api/employees/NV000",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees",
+            "NV000"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Employees",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees/NV000",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees",
+            "NV000"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Payroll",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/payrolls?month=3&year=2026",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "payrolls"
+          ],
+          "query": [
+            {
+              "key": "month",
+              "value": "3"
+            },
+            {
+              "key": "year",
+              "value": "2026"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Dashboard Employee",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/dashboard/employee-data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "dashboard",
+            "employee-data"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Profile",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Salary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/salary",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "salary"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Log Injection",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees?user=admin%0d%0a[INFO] User logged in successfully",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "user",
+              "value": "admin%0d%0a[INFO] User logged in successfully"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Local File Inclusion",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees?config=C:\\Windows\\System32\\cmd.exe",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "config",
+              "value": "C:\\Windows\\System32\\cmd.exe"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Command Injection",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "ip",
+              "value": "127.0.0.1;cat /etc/passwd"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Cross-Site Scripting",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees?name=<script>alert('Hacked!')</script>",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "<script>alert('Hacked!')</script>"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "SQL Injection",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "search",
+              "value": "1' UNION SELECT username, password FROM users--"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "scope",
+        "value": "openid",
+        "type": "string"
+      },
+      {
+        "key": "challengeAlgorithm",
+        "value": "S256",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "3cC8ZCUMYjWu7AysEiomW3SBcssCrave",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "payshield-app",
+        "type": "string"
+      },
+      {
+        "key": "accessTokenUrl",
+        "value": "http://localhost:8888/realms/payshield-realm/protocol/openid-connect/token",
+        "type": "string"
+      },
+      {
+        "key": "authUrl",
+        "value": "http://localhost:8888/realms/payshield-realm/protocol/openid-connect/auth",
+        "type": "string"
+      },
+      {
+        "key": "useBrowser",
+        "value": true,
+        "type": "boolean"
+      },
+      {
+        "key": "grant_type",
+        "value": "authorization_code_with_pkce",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

@@ -8,15 +8,19 @@ use App\Models\Employee;
 class ProfileApiController extends Controller
 {
 
-    public function showProfile($manv)
+    public function getProfile(Request $request)
     {
-        $employee = Employee::where('MANV', $manv)->first();
+        // Lấy email từ token để chống BOLA Attack
+        $email = $request->get('user_email');
+
+        if (!$email) {
+            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+        }
+
+        $employee = Employee::where('EMAIL', $email)->first();
 
         if (!$employee) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Không tìm thấy nhân viên này trên hệ thống!'
-            ], 404);
+            return response()->json(['message' => 'Không tìm thấy dữ liệu nhân viên'], 404);
         }
 
         return response()->json([

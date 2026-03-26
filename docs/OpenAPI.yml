@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Payshield API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8888/api
+security:
+  - pkceAuth: []
+paths:
+  /dashboard/manager-data:
+    get:
+      summary: GET Dashboard Manager
+      responses:
+        "200":
+          description: OK
+  /employees:
+    get:
+      summary: GET Roster
+      parameters:
+        - name: pentest
+          in: query
+          description: SQL Injection
+          schema:
+            type: string
+            example: "1' UNION SELECT username, password FROM users--"
+        - name: name
+          in: query
+          description: Cross-Site Scripting
+          schema:
+            type: string
+            example: "<script>alert('Hacked!')</script>"
+        - name: config
+          in: query
+          description: Local File Inclusion
+          schema:
+            type: string
+            example: "C:\\Windows\\System32\\cmd.exe"
+        - name: ip
+          in: query
+          description: Command Injection
+          schema:
+            type: string
+            example: "127.0.0.1;cat /etc/passwd"
+        - name: user
+          in: query
+          description: Log Injection
+          schema:
+            type: string
+            example: "admin%0d%0a[INFO] User logged in successfully"
+      responses:
+        "200":
+          description: Created
+  /employees/{employeeId}:
+    parameters:
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: string
+          example: "NV000"
+    get:
+      summary: GET Employees
+      responses:
+        "200":
+          description: OK
+    put:
+      summary: PUT Employees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                CHUCVU:
+                  type: string
+                  example: "Example"
+      responses:
+        "200":
+          description: OK
+    delete:
+      summary: DELETE Employees
+      responses:
+        "200":
+          description: OK
+  /payrolls:
+    get:
+      summary: GET Payroll
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: integer
+            example: 3
+        - name: year
+          in: query
+          schema:
+            type: integer
+            example: 2026
+      responses:
+        "200":
+          description: OK
+  /dashboard/employee-data:
+    get:
+      summary: GET Dashboard Employee
+      responses:
+        "200":
+          description: OK
+  /profile:
+    get:
+      summary: GET Profile
+      responses:
+        "200":
+          description: OK
+  /salary:
+    get:
+      summary: GET Salary
+      responses:
+        "200":
+          description: OK
+components:
+  securitySchemes:
+    pkceAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8888/realms/payshield-realm/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8888/realms/payshield-realm/protocol/openid-connect/token
+          x-use-pkce: true
+          scopes:
+            openid: "Xác thực"

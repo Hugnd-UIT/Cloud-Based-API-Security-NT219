@@ -1,0 +1,67 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: laravel-api-service
+    url: "http://payshield_app:80"
+    routes:
+      - name: laravel-api-route
+        paths:
+          - /api
+        strip_path: false
+
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 10
+          policy: local
+      
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+
+      - name: cors
+        config:
+          origins:
+            - "http://localhost:6868"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+          headers:
+            - Accept
+            - Accept-Version
+            - Content-Length
+            - Content-MD5
+            - Content-Type
+            - Date
+            - Authorization
+          credentials: true
+
+  - name: keycloak-service
+    url: http://payshield_keycloak:8080
+    routes:
+      - name: keycloak-route
+        paths:          
+          - /realms
+        strip_path: false
+        preserve_host: true
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 5 
+          policy: local
+
+consumers:                                                
+  - username: payshield-users
+    jwt_secrets:
+      - algorithm: RS256
+        secret: "{vault://hcv/secret/payshield?key=CLIENT_SECRET}"
+        key: "http://localhost:8888/realms/payshield-realm"
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyo6T5aZ8aRphvp2SltkoWg2Zwdt//hEEDspsE6TEe8b1sPSTwfw5wu80TvqoKGkQuLKR3FStTHc9iCgDQTMXBetMei9IqJWOngyi3neq9xQhrrdOiLShW1v3JshzrIKlNhjZMprwBwNiW4LqGxW3g32UMULc7ASe10+QLeH+oq4ke6psHWlA3RDDIgbokewBONg3niqCmpC6Uu9P4mHkdRSKbZmY2K7buqdTwA90FArifveG2FX4EfDqqFf1wj7bav1+Ar5KQyPa63SUSKzDlbqjLeQYd6qg/38qfmwE8NkTPGJXloPbm/EpCXwwAzp9UH1pTblIxxCcp3m8JQSYwIDAQAB
+          -----END PUBLIC KEY-----

@@ -6,9 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
+    protected $primaryKey = 'MANV';
+    
+    protected $keyType = 'string';
+    
+    public $incrementing = false;
+
     protected $fillable = [
-        'MANV', 'HOTEN', 'NGAYSINH', 'GIOITINH',
-        'CCCD', 'SDT', 'CHUCVU', 'NGAYVAOLAM', 'TRANGTHAI'
+        'SDT',
+        'CCCD',
+        'MANV',
+        'EMAIL',
+        'HOTEN',
+        'CHUCVU',
+        'NGAYSINH',
+        'GIOITINH',
+        'TRANGTHAI',
+        'NGAYVAOLAM'
     ];
 
     public function salaries() {
@@ -16,11 +30,7 @@ class Employee extends Model
                     ->orderBy('NAM', 'desc')
                     ->orderBy('THANG', 'desc'); 
     }
-
-    public function user() {
-        return $this->hasOne(User::class, 'MANV', 'MANV');
-    }
-
+    
     public function payrolls(){
         return $this->hasMany(Payroll::class, 'MANV', 'MANV');
     }

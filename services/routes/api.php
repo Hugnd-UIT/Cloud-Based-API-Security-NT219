@@ -7,27 +7,24 @@ use App\Http\Controllers\PayrollApiController;
 use App\Http\Controllers\RosterApiController;
 use App\Http\Controllers\ProfileApiController;
 use App\Http\Controllers\SalaryApiController;
+use App\Http\Middleware\CheckKeycloakToken;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('/payrolls', [PayrollApiController::class, 'index']);
+Route::middleware([CheckKeycloakToken::class])->group(function() {
+    Route::get('/employees', [RosterApiController::class, 'getRoster']);
+    Route::get('/payrolls', [PayrollApiController::class, 'getPayroll']);
 
-Route::get('/employees', [RosterApiController::class, 'index']);
+    Route::post('/employees', [RosterApiController::class, 'storeEmployee']);
+    Route::get('/employees/{id}', [RosterApiController::class, 'getEmployee']);
+    Route::put('/employees/{id}', [RosterApiController::class, 'updateEmployee']);
+    Route::delete('/employees/{id}', [RosterApiController::class, 'destroyEmployee']);
 
-Route::post('/employees', [RosterApiController::class, 'store']);
+    Route::get('/salary', [SalaryApiController::class, 'getSalary']);
+    Route::get('/profile', [ProfileApiController::class, 'getProfile']);
 
-Route::get('/employees/{id}', [RosterApiController::class, 'show']);
-
-Route::put('/employees/{id}', [RosterApiController::class, 'update']);
-
-Route::delete('/employees/{id}', [RosterApiController::class, 'destroy']);
-
-Route::get('/profile/{manv}', [ProfileApiController::class, 'showProfile']);
-
-Route::get('dashboard/manager-data', [DashboardApiController::class, 'get_manager_data']);
-
-Route::get('dashboard/employee-data', [DashboardApiController::class, 'get_employee_data']);
-
-Route::get('/salary/{manv}', [SalaryApiController::class, 'showSalary']);
+    Route::get('dashboard/manager-data', [DashboardApiController::class, 'getManagerDashboard']);
+    Route::get('dashboard/employee-data', [DashboardApiController::class, 'getEmployeeDashboard']);
+});

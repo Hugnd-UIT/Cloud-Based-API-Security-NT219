@@ -8,8 +8,15 @@ use Carbon\Carbon;
 
 class PayrollApiController extends Controller
 {
-    public function index(Request $request)
+    public function getPayroll(Request $request)
     {
+        // Phân quyền xem bảng lương
+        $role = $request->get('user_roles');
+
+        if (!in_array('manager', $role)) {
+            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+        }
+
         $month = $request->query('month', Carbon::now()->month);
         $year  = $request->query('year', Carbon::now()->year);
 
@@ -18,7 +25,7 @@ class PayrollApiController extends Controller
                     ->where('NAM', $year)
                     ->get();
 
-        $formatted_list = $payroll_list->map(function ($p) {
+        $list = $payroll_list->map(function ($p) {
             $status = $p->TIENLUONGTL > 0 ? 'paid' : 'pending';
             return [
                 'name'   => $p->employee ? $p->employee->HOTEN : ($p->MANV ?? 'Unknown'),
@@ -32,15 +39,15 @@ class PayrollApiController extends Controller
         });
 
         $summary_data = [
-            'total_cost'    => $formatted_list->sum('total'),
-            'total_paid'    => $formatted_list->where('status', 'paid')->sum('total'),
-            'total_pending' => $formatted_list->where('status', 'pending')->sum('total'),
+            'total_cost'    => $list->sum('total'),
+            'total_paid'    => $list->where('status', 'paid')->sum('total'),
+            'total_pending' => $list->where('status', 'pending')->sum('total'),
         ];
 
         return response()->json([
-            'filter'  => ['month' => $month, 'year' => $year], 
+            'status' => true,
             'summary' => $summary_data,
-            'list'    => $formatted_list
+            'data' => $list
         ]);
     }
 }
