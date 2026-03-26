@@ -47,6 +47,7 @@ class CheckKeycloakToken
                 // Gán role vào request
                 'user_roles' => $decoded_token->realm_access->roles ?? []
             ]);
+            
             // Thả request tiếp tục vào Controller
             return $next($request);
 

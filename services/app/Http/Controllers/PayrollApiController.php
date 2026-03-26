@@ -46,6 +46,7 @@ class PayrollApiController extends Controller
 
         return response()->json([
             'status' => true,
+            'summary' => $summary_data,
             'data' => $list
         ]);
     }
