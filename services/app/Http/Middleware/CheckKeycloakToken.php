@@ -30,8 +30,15 @@ class CheckKeycloakToken
         }
 
         try {
-            // Lấy public key từ .env
-            $public_key = env('KEYCLOAK_PUBLIC_KEY');
+            $public_key = "-----BEGIN PUBLIC KEY-----\n" .
+                "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyo6T5aZ8aRphvp2Sltk\n" .
+                "oWg2Zwdt//hEEDspsE6TEe8b1sPSTwfw5wu80TvqoKGkQuLKR3FStTHc9iCgDQTM\n" .
+                "XBetMei9IqJWOngyi3neq9xQhrrdOiLShW1v3JshzrIKlNhjZMprwBwNiW4LqGxW\n" .
+                "3g32UMULc7ASe10+QLeH+oq4ke6psHWlA3RDDIgbokewBONg3niqCmpC6Uu9P4mH\n" .
+                "kdRSKbZmY2K7buqdTwA90FArifveG2FX4EfDqqFf1wj7bav1+Ar5KQyPa63SUSKz\n" .
+                "DlbqjLeQYd6qg/38qfmwE8NkTPGJXloPbm/EpCXwwAzp9UH1pTblIxxCcp3m8JQS\n" .
+                "YwIDAQAB\n" .
+                "-----END PUBLIC KEY-----";
             
             // Kiểm tra public key nếu không có thì quăng lỗi 401
             if (!$public_key) {
