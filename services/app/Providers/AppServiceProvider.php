@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
                 Config::set('services.keycloak.admin_user', $secrets['KC_ADMIN_USER'] ?? null);
                 Config::set('services.keycloak.admin_password', $secrets['KC_ADMIN_PASSWORD'] ?? null);
                 Config::set('services.payshield.client_secret', $secrets['CLIENT_SECRET'] ?? null);
-                Config::set('services.payshield.webhook_secret', $secrets['WEBHOOK_SECRET'] ?? 'DoAnMatMa');
+                Config::set('services.payshield.webhook_secret', $secrets['WEBHOOK_SECRET'] ?? null);
                 
                 DB::purge('mysql');
             }

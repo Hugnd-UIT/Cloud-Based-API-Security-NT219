@@ -14,12 +14,8 @@ class VerifyWebhookSignature
         $expectedSignature = hash_hmac('sha256', $request->getContent(), $secret);
 
         if (!hash_equals($expectedSignature, (string) $signature)) {
-            // TẠM THỜI THÊM 3 DÒNG DEBUG NÀY VÀO ĐỂ BẮT LỖI
             return response()->json([
-                'error' => 'Chữ ký sai, cấm cửa!',
-                'debug_mat_khau_cua_laravel_dang_dung' => $secret,
-                'debug_chu_ky_cua_postman' => $signature,
-                'debug_chu_ky_cua_laravel' => $expectedSignature
+                'error' => 'Chữ ký sai, cấm cửa!'
             ], 403);
         }
 
