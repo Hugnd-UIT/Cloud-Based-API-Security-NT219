@@ -21,6 +21,8 @@ services:
     environment:
       MYSQL_DATABASE: QlyLuong
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}      
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - payshield_mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -35,7 +37,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
       KC_DB: mysql
       KC_DB_URL: jdbc:mysql://db:3306/QlyKeyCloak
-      KC_DB_USERNAME: admin
+      KC_DB_USERNAME: root
       KC_DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
       - db
@@ -53,7 +55,7 @@ services:
       KONG_VAULT_HCV_PROTOCOL: http
       KONG_VAULT_HCV_HOST: payshield_vault
       KONG_VAULT_HCV_PORT: 8200
-      KONG_VAULT_HCV_TOKEN: ${VAULT_APP_TOKEN}
+      KONG_VAULT_HCV_TOKEN: "${VAULT_APP_TOKEN}"
       KONG_VAULT_HCV_KV: v2
     ports:
       - "8000:8000"
@@ -84,9 +86,9 @@ services:
     ports:
       - "8200:8200"
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: "root"
+      VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/file"}}, "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable": 1}}, "ui": true, "disable_mlock": true}'
       VAULT_ADDR: "http://0.0.0.0:8200"
-      VAULT_TOKEN: "root"
+      VAULT_API_ADDR: "http://0.0.0.0:8200"
     cap_add:
       - IPC_LOCK
     command: server

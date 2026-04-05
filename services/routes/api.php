@@ -8,6 +8,8 @@ use App\Http\Controllers\RosterApiController;
 use App\Http\Controllers\ProfileApiController;
 use App\Http\Controllers\SalaryApiController;
 use App\Http\Middleware\CheckKeycloakToken;
+use App\Http\Controllers\WebhookController;
+use App\Http\Middleware\VerifyWebhookSignature;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -27,4 +29,7 @@ Route::middleware([CheckKeycloakToken::class])->group(function() {
 
     Route::get('dashboard/manager-data', [DashboardApiController::class, 'getManagerDashboard']);
     Route::get('dashboard/employee-data', [DashboardApiController::class, 'getEmployeeDashboard']);
+
+    Route::post('/webhook/test', [WebhookController::class, 'handle'])
+    ->middleware(VerifyWebhookSignature::class);
 });

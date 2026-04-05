@@ -23,3 +23,5 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 secrets.json
+unseal.vault.ps1
+Vault_key.txt
