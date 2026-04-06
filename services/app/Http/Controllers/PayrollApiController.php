@@ -10,11 +10,11 @@ class PayrollApiController extends Controller
 {
     public function getPayroll(Request $request)
     {
-        // Phân quyền xem bảng lương
+        // Authorization check for payroll access
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         $month = $request->query('month', Carbon::now()->month);
@@ -34,7 +34,7 @@ class PayrollApiController extends Controller
                 'fine'   => (float) $p->TIENPHAT,
                 'total'  => (float) $p->TIENLUONGTL,
                 'status' => $status,
-                'period' => "Tháng $p->THANG/$p->NAM"
+                'period' => "Month $p->THANG/$p->NAM"
             ];
         });
 

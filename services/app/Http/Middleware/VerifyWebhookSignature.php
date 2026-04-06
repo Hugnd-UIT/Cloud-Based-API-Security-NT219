@@ -15,7 +15,7 @@ class VerifyWebhookSignature
 
         if (!hash_equals($expectedSignature, (string) $signature)) {
             return response()->json([
-                'error' => 'Chữ ký sai, cấm cửa!'
+                'error' => 'Invalid signature, access denied!'
             ], 403);
         }
 

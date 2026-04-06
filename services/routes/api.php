@@ -16,6 +16,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::middleware([CheckKeycloakToken::class])->group(function() {
+    Route::get('/salary', [SalaryApiController::class, 'getSalary']);
+    Route::get('/profile', [ProfileApiController::class, 'getProfile']);
+
     Route::get('/employees', [RosterApiController::class, 'getRoster']);
     Route::get('/payrolls', [PayrollApiController::class, 'getPayroll']);
 
@@ -24,12 +27,8 @@ Route::middleware([CheckKeycloakToken::class])->group(function() {
     Route::put('/employees/{id}', [RosterApiController::class, 'updateEmployee']);
     Route::delete('/employees/{id}', [RosterApiController::class, 'destroyEmployee']);
 
-    Route::get('/salary', [SalaryApiController::class, 'getSalary']);
-    Route::get('/profile', [ProfileApiController::class, 'getProfile']);
-
     Route::get('dashboard/manager-data', [DashboardApiController::class, 'getManagerDashboard']);
     Route::get('dashboard/employee-data', [DashboardApiController::class, 'getEmployeeDashboard']);
 
-    Route::post('/webhook/test', [WebhookController::class, 'handle'])
-    ->middleware(VerifyWebhookSignature::class);
+    Route::post('/webhook', [WebhookController::class, 'handle'])->middleware(VerifyWebhookSignature::class);
 });

@@ -19,15 +19,16 @@ class ProcessSalaryAdvanceJob implements ShouldQueue
     {
         $this->webhookData = $webhookData;
     }
+
     public function handle(): void
     {
-        $nhanVien = $this->webhookData['nhan_vien'] ?? 'Unknown';
-        $soTien = $this->webhookData['tien_ung'] ?? 0;
+        $employee = $this->webhookData['nhan_vien'] ?? 'Unknown';
+        $amount = $this->webhookData['tien_ung'] ?? 0;
 
-        Log::info("[WORKER] Bắt đầu xử lý ứng lương cho: {$nhanVien}");
+        Log::info("[INFO] Starting salary advance processing for: {$employee}");
 
         sleep(3); 
         
-        Log::info("[WORKER] Xử lý xong! Đã giải ngân {$soTien} VNĐ cho {$nhanVien}.");
+        Log::info("[INFO] Completed! Disbursed {$amount} VND to {$employee}.");
     }
 }

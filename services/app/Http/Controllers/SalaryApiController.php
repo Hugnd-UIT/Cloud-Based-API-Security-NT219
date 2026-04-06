@@ -9,11 +9,11 @@ class SalaryApiController extends Controller
 {
     public function getSalary(Request $request)
     {
-        // Lấy email từ token để chống BOLA Attack
+        // Get email from token to prevent BOLA attack
         $email = $request->get('user_email');
 
         if (!$email) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         $employee = Employee::with(['salaries' => function($query) {
@@ -21,7 +21,7 @@ class SalaryApiController extends Controller
         }])->where('EMAIL', $email)->first();
 
         if (!$employee) {
-            return response()->json(['message' => 'Không tìm thấy dữ liệu nhân viên'], 404);
+            return response()->json(['message' => 'Employee data not found'], 404);
         }
 
         return response()->json([

@@ -1,11 +1,11 @@
-$Key1 = "3nQ77WINkGel4vckD/cKuU4yLMKQZo7Ozlvjm/eud17/"
-$Key2 = "8/fC2Lq71N4x+/8Kaa9wNAM2/gfCantwSt3Ew7Mv2bPe"
-$Key3 = "dc0ophQEL4u2uhB+0u79jFVEOMjiiR1helpx6NxZRSkN"
+$Key1 = "TOVQkxwi0o7ucmnKz0YiNFGjiSI2h4j4QgGBjKGJFZ82"
+$Key2 = "AbdNnjDvPni/EU+nL1anAjgAR9MS5m51j2jm8m8xmGTf"
+$Key3 = "s3zoceSj/z+NTdKE94l8iL8T4cnXKcj67RcoLIFpGJRA"
 
-Write-Host "Dang tu dong mo ket sat Vault..." -ForegroundColor Cyan
+Write-Host "Automatically unsealing Vault..." -ForegroundColor Cyan
 
 docker exec -it payshield_vault vault operator unseal $Key1
 docker exec -it payshield_vault vault operator unseal $Key2
 docker exec -it payshield_vault vault operator unseal $Key3
 
-Write-Host "Ket da mo !" -ForegroundColor Green
+Write-Host "Vault unsealed successfully!" -ForegroundColor Green

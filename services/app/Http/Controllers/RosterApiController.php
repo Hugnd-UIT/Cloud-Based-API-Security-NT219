@@ -9,11 +9,11 @@ class RosterApiController extends Controller
 {
     public function getRoster(Request $request)
     {
-        // Phân quyền xem danh sách nhân viên
+        // Authorization check for viewing employee list
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         return response()->json(Employee::orderBy('created_at', 'desc')->get());
@@ -21,11 +21,11 @@ class RosterApiController extends Controller
 
     public function getEmployee(Request $request, $id)
     {
-        // Phân quyền xem chi tiết nhân viên
+        // Authorization check for viewing employee detail
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         return response()->json(Employee::find($id));
@@ -33,11 +33,11 @@ class RosterApiController extends Controller
 
     public function storeEmployee(Request $request)
     {
-        // Phân quyền thêm nhân viên
+        // Authorization check for creating employee
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         try {
@@ -53,12 +53,13 @@ class RosterApiController extends Controller
 
     public function updateEmployee(Request $request, $id)
     {
-        // Phân quyền sửa nhân viên
+        // Authorization check for updating employee
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
+
         try {
             $employee = Employee::find($id);
             if($employee) {
@@ -73,11 +74,11 @@ class RosterApiController extends Controller
 
     public function destroyEmployee(Request $request, $id)
     {
-        // Phân quyền xóa nhân viên
+        // Authorization check for deleting employee
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         $employee = Employee::find($id);
@@ -86,6 +87,7 @@ class RosterApiController extends Controller
             $employee->delete();
             return response()->json(['success' => true]);
         }
+
         return response()->json(['success' => false]);
     }
 }

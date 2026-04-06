@@ -1,67 +1,57 @@
 _format_version: "3.0"
 _transform: true
 
+upstreams:
+  - name: laravel_upstream
+    targets:
+      - target: payshield_nginx:8443
+
 services:
   - name: laravel-api-service
-    url: "http://payshield_app:80"
+    url: "https://laravel_upstream"
     routes:
       - name: laravel-api-route
         paths:
           - /api
         strip_path: false
-
     plugins:
       - name: rate-limiting
         config:
           minute: 10
           policy: local
-      
-      - name: jwt
-        config:
-          claims_to_verify:
-            - exp
-
       - name: cors
         config:
           origins:
             - "http://localhost:6868"
           methods:
-            - GET
-            - POST
-            - PUT
-            - PATCH
-            - DELETE
+            - "GET"
+            - "POST"
+            - "PUT"
+            - "PATCH"
+            - "DELETE"
           headers:
-            - Accept
-            - Accept-Version
-            - Content-Length
-            - Content-MD5
-            - Content-Type
-            - Date
-            - Authorization
+            - "Accept"
+            - "Accept-Version"
+            - "Content-Length"
+            - "Content-MD5"
+            - "Content-Type"
+            - "Date"
+            - "Authorization"
           credentials: true
 
-  - name: keycloak-service
-    url: http://payshield_keycloak:8080
-    routes:
-      - name: keycloak-route
-        paths:          
-          - /realms
-        strip_path: false
-        preserve_host: true
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 5 
-          policy: local
-
-consumers:                                                
+consumers:
   - username: payshield-users
     jwt_secrets:
       - algorithm: RS256
-        secret: "{vault://hcv/secret/payshield?key=CLIENT_SECRET}"
         key: "http://localhost:8888/realms/payshield-realm"
+        secret: "{vault://env/secret/payshield?key=CLIENT_SECRET}"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtIT3gkbuErKv+Wc2cHcFKll9StlU7/k6IY0IXCabQxrIW3ygcPNRd+uI9LgZ6dZl7BuInQdUbt4CBPHr1WX+yiO20uDzkraN5RW23j/Lhbw3iUbE66w0ZI7/BIYU1ydYTAsn6Sn9SmrjpHACQIf8hE9SgyD7P1qonbmMECzUsflYV/Bn15MVnyZJBkgECTTUu79Suy6TabjjojG6xl4iFpIaww/8OD9yQuo5stDgLqxHo1tlVac+EMzBpB0YUf3s8bafB/KRMCS5whWYo4DdMDgGj/oFcZVgaNh18vYcuxik7Q0q6VtyvJ2tIKqIbUybL9eXUeWSGfuuIC5xAB+k/wIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyo6T5aZ8aRphvp2Sltk
+          oWg2Zwdt//hEEDspsE6TEe8b1sPSTwfw5wu80TvqoKGkQuLKR3FStTHc9iCgDQTM
+          XBetMei9IqJWOngyi3neq9xQhrrdOiLShW1v3JshzrIKlNhjZMprwBwNiW4LqGxW
+          3g32UMULc7ASe10+QLeH+oq4ke6psHWlA3RDDIgbokewBONg3niqCmpC6Uu9P4mH
+          kdRSKbZmY2K7buqdTwA90FArifveG2FX4EfDqqFf1wj7bav1+Ar5KQyPa63SUSKz
+          DlbqjLeQYd6qg/38qfmwE8NkTPGJXloPbm/EpCXwwAzp9UH1pTblIxxCcp3m8JQS
+          YwIDAQAB
           -----END PUBLIC KEY-----

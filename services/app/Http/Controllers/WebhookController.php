@@ -14,24 +14,24 @@ class WebhookController extends Controller
         $eventId = $data['event_id'] ?? null;
 
         if (!$eventId) {
-            return response()->json(['error' => 'Thiếu mã event_id!'], 400);
+            return response()->json(['error' => 'Missing event_id!'], 400);
         }
 
         if (Cache::has('webhook_processed_' . $eventId)) {
-            Log::warning("[BẢO VỆ] Phát hiện gói tin nhai lại (Replay): {$eventId}. Đã chặn!");
+            Log::warning("[Security] Replay Attack Detected: {$eventId}. Blocked!");
             return response()->json([
                 'status' => 'success',
-                'message' => 'Đã tiếp nhận giao dịch này trước đó.'
+                'message' => 'This transaction has already been processed.'
             ]);
         }
 
         Cache::put('webhook_processed_' . $eventId, true, 86400);
-        Log::info("[LỄ TÂN] Đã nhận Webhook {$eventId}, đang đẩy vào hàng đợi...");
+        Log::info("[INFO] Webhook {$eventId} received, pushing to queue...");
         ProcessSalaryAdvanceJob::dispatch($data);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'PayShield đã đưa lệnh ứng lương vào hàng đợi xử lý!'
+            'message' => 'PayShield has queued the salary advance request for processing!'
         ]);
     }
 }

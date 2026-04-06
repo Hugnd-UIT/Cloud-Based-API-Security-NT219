@@ -18,52 +18,58 @@ class CheckKeycloakToken
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Lấy token từ request
+        // Get token from request
         $token = $request->bearerToken();
 
-        // Kiểm tra token nếu không có thì quăng lỗi 401
+        // Check if token exists, otherwise return 401
         if (!$token) {
             return response()->json([
                 'status' => false,
-                'message' => 'Lỗi: Bạn chưa đăng nhập hoặc thiếu Token!'
+                'message' => 'Error: You are not logged in or token is missing!'
             ], 401);
         }
 
         try {
             $public_key = <<<EOD
                 -----BEGIN PUBLIC KEY-----
-                MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtIT3gkbuErKv+Wc2cHcFKll9StlU7/k6IY0IXCabQxrIW3ygcPNRd+uI9LgZ6dZl7BuInQdUbt4CBPHr1WX+yiO20uDzkraN5RW23j/Lhbw3iUbE66w0ZI7/BIYU1ydYTAsn6Sn9SmrjpHACQIf8hE9SgyD7P1qonbmMECzUsflYV/Bn15MVnyZJBkgECTTUu79Suy6TabjjojG6xl4iFpIaww/8OD9yQuo5stDgLqxHo1tlVac+EMzBpB0YUf3s8bafB/KRMCS5whWYo4DdMDgGj/oFcZVgaNh18vYcuxik7Q0q6VtyvJ2tIKqIbUybL9eXUeWSGfuuIC5xAB+k/wIDAQAB
+                MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyo6T5aZ8aRphvp2SltkoWg2Zwdt//hEEDspsE6TEe8b1sPSTwfw5wu80TvqoKGkQuLKR3FStTHc9iCgDQTMXBetMei9IqJWOngyi3neq9xQhrrdOiLShW1v3JshzrIKlNhjZMprwBwNiW4LqGxW3g32UMULc7ASe10+QLeH+oq4ke6psHWlA3RDDIgbokewBONg3niqCmpC6Uu9P4mHkdRSKbZmY2K7buqdTwA90FArifveG2FX4EfDqqFf1wj7bav1+Ar5KQyPa63SUSKzDlbqjLeQYd6qg/38qfmwE8NkTPGJXloPbm/EpCXwwAzp9UH1pTblIxxCcp3m8JQSYwIDAQAB
                 -----END PUBLIC KEY-----
                 EOD;
             
-            // Kiểm tra public key nếu không có thì quăng lỗi 401
+            // Check if public key is configured
             if (!$public_key) {
-                throw new Exception("Chưa cấu hình public key");
+                throw new Exception("Public key is not configured");
             }
 
-            // Giải mã token
+            // Decode token
             $decoded_token = JWT::decode($token, new Key($public_key, 'RS256'));
             
             $request->merge([
-                // Gán email vào request
+                // Attach email to request
                 'user_email' => $decoded_token->email ?? null,
-                // Gán role vào request
+                // Attach roles to request
                 'user_roles' => $decoded_token->realm_access->roles ?? []
             ]);
             
-            // Thả request tiếp tục vào Controller
+            // Continue request to Controller
             return $next($request);
 
         } catch (\Firebase\JWT\ExpiredException $e) {
-            return response()->json(['status' => false, 'message' => 'Token đã hết hạn! Vui lòng đăng nhập lại.'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Token has expired! Please log in again.'
+            ], 401);
         } catch (Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Token không hợp lệ hoặc bị giả mạo!'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid or tampered token!'
+            ], 401);
         }
     }
 }
 
-// RS256 là ký số: kết hợp giữa RSA và SHA-256
-// RSA - Mã hóa bất đối xứng:
-//      Cơ chế: Dùng private key của keycloak để ký lên token. Dùng public key để kiểm tra chữ ký trên token.
-// SHA-256 - Hàm băm:
-//      Cơ chế: Trước khi dùng RSA để ký, toàn bộ dữ liệu của token sẽ được băm ra thành một chuỗi ngắn.
+// RS256 is a digital signature: combination of RSA and SHA-256
+// RSA - Asymmetric encryption:
+//      Mechanism: Use Keycloak's private key to sign the token. Use public key to verify the signature.
+// SHA-256 - Hash function:
+//      Mechanism: Before signing with RSA, the token data is hashed into a shorter string.

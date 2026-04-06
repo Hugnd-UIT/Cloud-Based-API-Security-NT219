@@ -1,22 +1,17 @@
 {
   "info": {
-    "_postman_id": "43b972d1-9c87-4772-9414-b2f415279d14",
+    "_postman_id": "11a9a0a2-6d66-438f-bea8-7507026c1c09",
     "name": "API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "53680274"
+    "_exporter_id": "50000228",
+    "_collection_link": "https://go.postman.co/collection/50000228-11a9a0a2-6d66-438f-bea8-7507026c1c09?source=collection_link"
   },
   "item": [
     {
       "name": "Dashboard Manager",
       "request": {
         "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
+        "header": [],
         "url": {
           "raw": "http://localhost:8888/api/dashboard/manager-data",
           "protocol": "http",
@@ -376,7 +371,7 @@
       "response": []
     },
     {
-      "name": "New Request",
+      "name": "Webhook",
       "event": [
         {
           "listen": "prerequest",
@@ -411,7 +406,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\"nhan_vien\":\"Hung\",\"tien_ung\":500000}",
+          "raw": "{\"event_id\":\"PAYSHIELD-001\",\"nhan_vien\":\"Hung Nguyen\",\"tien_ung\":500000}",
           "options": {
             "raw": {
               "language": "json"
@@ -419,7 +414,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8081/api/webhook/test",
+          "raw": "http://localhost:8081/api/webhook",
           "protocol": "http",
           "host": [
             "localhost"
@@ -427,8 +422,7 @@
           "port": "8081",
           "path": [
             "api",
-            "webhook",
-            "test"
+            "webhook"
           ]
         }
       },
@@ -439,14 +433,39 @@
     "type": "oauth2",
     "oauth2": [
       {
-        "key": "clientSecret",
-        "value": "efksbvBAvnTTaSQ1Bo1Ph91plh1hiUkJ",
+        "key": "authUrl",
+        "value": "http://localhost:8080/realms/payshield-realm/protocol/openid-connect/auth",
         "type": "string"
       },
       {
-        "key": "useBrowser",
-        "value": true,
-        "type": "boolean"
+        "key": "accessTokenUrl",
+        "value": "http://localhost:8080/realms/payshield-realm/protocol/openid-connect/token",
+        "type": "string"
+      },
+      {
+        "key": "grant_type",
+        "value": "authorization_code_with_pkce",
+        "type": "string"
+      },
+      {
+        "key": "tokenType",
+        "value": "Bearer",
+        "type": "string"
+      },
+      {
+        "key": "accessToken",
+        "value": "{{Token}}",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "{{Client ID}}",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "{{Client Secret}}",
+        "type": "string"
       },
       {
         "key": "scope",
@@ -459,24 +478,9 @@
         "type": "string"
       },
       {
-        "key": "clientId",
-        "value": "payshield-app",
-        "type": "string"
-      },
-      {
-        "key": "accessTokenUrl",
-        "value": "http://localhost:8888/realms/payshield-realm/protocol/openid-connect/token",
-        "type": "string"
-      },
-      {
-        "key": "authUrl",
-        "value": "http://localhost:8888/realms/payshield-realm/protocol/openid-connect/auth",
-        "type": "string"
-      },
-      {
-        "key": "grant_type",
-        "value": "authorization_code_with_pkce",
-        "type": "string"
+        "key": "useBrowser",
+        "value": true,
+        "type": "boolean"
       },
       {
         "key": "addTokenTo",
@@ -507,6 +511,16 @@
           ""
         ]
       }
+    }
+  ],
+  "variable": [
+    {
+      "key": "Client ID",
+      "value": ""
+    },
+    {
+      "key": "Client Secret",
+      "value": ""
     }
   ]
 }
