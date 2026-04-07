@@ -54,10 +54,13 @@ services:
       KONG_CLIENT_SSL_CERT: "/etc/kong/certs/kong.crt"
       KONG_CLIENT_SSL_CERT_KEY: "/etc/kong/certs/kong.key"
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
+      KONG_PLUGINS: "bundled,opa"
+      KONG_DNS_RESOLVER: "127.0.0.11"
     ports:
       - "8000:8000"
     volumes:
       - ../gateway/kong.yml:/usr/local/kong/declarative/kong.yml
+      - ./opa:/usr/local/share/lua/5.1/kong/plugins/opa
     depends_on:
       vault:
         condition: service_started
@@ -151,6 +154,12 @@ services:
              jq -r '.data.data.ca_cert' /tmp/mtls.json > /etc/nginx/certs/ca.crt &&
              nginx -g 'daemon off;'"
 
+  opa:
+    image: openpolicyagent/opa:latest
+    container_name: payshield_opa
+    volumes:
+      - ./opa/policy.rego:/fortress/policy.rego 
+    command: "run --server --addr :8181 --watch /fortress/policy.rego"
 volumes:
   payshield_mysql_data:
   payshield_vault_data:
