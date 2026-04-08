@@ -31,16 +31,24 @@ services:
     image: quay.io/keycloak/keycloak:23.0.0
     container_name: payshield_keycloak
     ports:
-      - "8080:8080"
+      - "8444:8443"
     environment:
       KEYCLOAK_ADMIN: ${KC_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8444
+      KC_HOSTNAME_STRICT_HTTPS: "true"
       KC_DB: mysql
       KC_DB_URL: jdbc:mysql://db:3306/QlyKeyCloak
       KC_DB_USERNAME: root
       KC_DB_PASSWORD: ${DB_PASSWORD}
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server.key
     depends_on:
       - db
+    volumes:
+      - ./cert/keycloak.crt:/opt/keycloak/conf/server.crt
+      - ./key/keycloak.key:/opt/keycloak/conf/server.key
     command: start-dev
 
   kong:
@@ -148,9 +156,9 @@ services:
     command: server
     volumes:
       - payshield_vault_data:/vault/file
-      - ./vault.crt:/vault/certs/vault.crt
-      - ./vault.key:/vault/certs/vault.key
-      - ./ca.crt:/vault/certs/ca.crt
+      - ./cert/ca.crt:/vault/certs/ca.crt
+      - ./cert/vault.crt:/vault/certs/vault.crt
+      - ./key/vault.key:/vault/certs/vault.key
 
   swagger:
     image: swaggerapi/swagger-ui

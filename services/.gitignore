@@ -24,7 +24,6 @@ Homestead.yaml
 Thumbs.db
 unseal.vault.ps1
 Vault_key.txt
-*.key
-*.crt
-*.csr
-*.srl
+services/key/
+services/vault/Vault_Key.txt
+services/scripts/*.cnf
