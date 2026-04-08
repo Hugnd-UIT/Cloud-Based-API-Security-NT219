@@ -696,8 +696,8 @@
       "clientId": "payshield-app",
       "name": "",
       "description": "",
-      "rootUrl": "http://localhost:8000",
-      "adminUrl": "http://localhost:8000",
+      "rootUrl": "https://localhost:8888",
+      "adminUrl": "https://localhost:8888",
       "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
@@ -705,8 +705,8 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
+        "https://localhost:8888/*",
         "http://localhost:6868/oauth2-redirect.html",
-        "http://localhost:8000/*",
         "https://oauth.pstmn.io/v1/callback"
       ],
       "webOrigins": [
@@ -2281,7 +2281,7 @@
     "oauth2DeviceCodeLifespan": "600",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
-    "frontendUrl": "http://localhost:8080",
+    "frontendUrl": "https://localhost:8444",
     "acr.loa.map": "{}"
   },
   "keycloakVersion": "23.0.0",

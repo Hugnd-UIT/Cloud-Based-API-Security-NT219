@@ -1,24 +1,21 @@
 _format_version: "3.0"
 _transform: true
 
-upstreams:
-  - name: laravel_upstream
-    targets:
-      - target: payshield_nginx:8443
-
 services:
   - name: laravel-api-service
-    url: "https://laravel_upstream"
+    url: "https://nginx:8443"
     routes:
       - name: laravel-api-route
         paths:
           - /api
         strip_path: false
+    
     plugins:
       - name: rate-limiting
         config:
           minute: 10
           policy: local
+      
       - name: cors
         config:
           origins:
@@ -38,12 +35,19 @@ services:
             - "Date"
             - "Authorization"
           credentials: true
+      
+      - name: jwt
+      
+      - name: opa
+        config:
+          opa_server: "http://opa:8181"
+          opa_path: "/v1/data/payshield/authz"
 
 consumers:
   - username: payshield-users
     jwt_secrets:
       - algorithm: RS256
-        key: "http://localhost:8888/realms/payshield-realm"
+        key: "https://localhost:8444/realms/payshield-realm"
         secret: "{vault://env/secret/payshield?key=CLIENT_SECRET}"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----

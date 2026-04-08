@@ -13,8 +13,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/dashboard/manager-data",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/dashboard/manager-data",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -34,8 +34,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -54,8 +54,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees/NV000",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees/NV000",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -84,8 +84,8 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8888/api/employees",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -113,8 +113,8 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8888/api/employees/NV000",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees/NV000",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -134,8 +134,8 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees/NV000",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees/NV000",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -155,8 +155,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/payrolls?month=3&year=2026",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/payrolls?month=3&year=2026",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -185,8 +185,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/dashboard/employee-data",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/dashboard/employee-data",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -206,8 +206,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/profile",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/profile",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -226,8 +226,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/salary",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/salary",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -246,8 +246,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?user=admin%0d%0a[INFO] User logged in successfully",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?user=admin%0d%0a[INFO] User logged in successfully",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -272,8 +272,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?config=C:\\Windows\\System32\\cmd.exe",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?config=C:\\Windows\\System32\\cmd.exe",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -298,8 +298,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -324,8 +324,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?name=<script>alert('Hacked!')</script>",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?name=<script>alert('Hacked!')</script>",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -350,8 +350,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -433,13 +433,13 @@
     "type": "oauth2",
     "oauth2": [
       {
-        "key": "authUrl",
-        "value": "http://localhost:8080/realms/payshield-realm/protocol/openid-connect/auth",
+        "key": "accessTokenUrl",
+        "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/token",
         "type": "string"
       },
       {
-        "key": "accessTokenUrl",
-        "value": "http://localhost:8080/realms/payshield-realm/protocol/openid-connect/token",
+        "key": "authUrl",
+        "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/auth",
         "type": "string"
       },
       {
