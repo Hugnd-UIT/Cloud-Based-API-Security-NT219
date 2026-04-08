@@ -9,39 +9,46 @@ services:
         paths:
           - /api
         strip_path: false
-    
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 10
-          policy: local
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              policy: local
+          - name: cors
+            config:
+              origins: ["http://localhost:6868"]
+              methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+              headers: ["Accept", "Accept-Version", "Content-Length", "Content-MD5", "Content-Type", "Date", "Authorization"]
+              credentials: true
+          - name: jwt
+          - name: opa
+            config:
+              opa_server: "https://opa:8181"
+              opa_path: "/v1/data/payshield/authz"
+
+      - name: vnpay-ipn-route
+        paths:
+          - /api/vnpay-ipn
+        strip_path: false
+        methods:
+          - GET
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              policy: local
       
-      - name: cors
-        config:
-          origins:
-            - "http://localhost:6868"
-          methods:
-            - "GET"
-            - "POST"
-            - "PUT"
-            - "PATCH"
-            - "DELETE"
-          headers:
-            - "Accept"
-            - "Accept-Version"
-            - "Content-Length"
-            - "Content-MD5"
-            - "Content-Type"
-            - "Date"
-            - "Authorization"
-          credentials: true
-      
-      - name: jwt
-      
-      - name: opa
-        config:
-          opa_server: "http://opa:8181"
-          opa_path: "/v1/data/payshield/authz"
+      - name: vnpay-return-route
+        paths:
+          - /api/vnpay-return
+        strip_path: false
+        methods:
+          - GET
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              policy: local
 
 consumers:
   - username: payshield-users
