@@ -4,8 +4,8 @@ $Key3 = "s3zoceSj/z+NTdKE94l8iL8T4cnXKcj67RcoLIFpGJRA"
 
 Write-Host "Automatically unsealing Vault..." -ForegroundColor Cyan
 
-docker exec -it payshield_vault vault operator unseal $Key1
-docker exec -it payshield_vault vault operator unseal $Key2
-docker exec -it payshield_vault vault operator unseal $Key3
+docker exec -e VAULT_ADDR="https://127.0.0.1:8200" -e VAULT_CACERT="/vault/certs/ca.crt" payshield_vault vault operator unseal $Key1
+docker exec -e VAULT_ADDR="https://127.0.0.1:8200" -e VAULT_CACERT="/vault/certs/ca.crt" payshield_vault vault operator unseal $Key2
+docker exec -e VAULT_ADDR="https://127.0.0.1:8200" -e VAULT_CACERT="/vault/certs/ca.crt" payshield_vault vault operator unseal $Key3
 
 Write-Host "Vault unsealed successfully!" -ForegroundColor Green

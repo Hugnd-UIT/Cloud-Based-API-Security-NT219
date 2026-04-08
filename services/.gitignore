@@ -24,9 +24,7 @@ Homestead.yaml
 Thumbs.db
 unseal.vault.ps1
 Vault_key.txt
-ca.crt
-ca.key
-kong.crt
-kong.key
-laravel.crt
-laravel.key
+*.key
+*.crt
+*.csr
+*.srl
