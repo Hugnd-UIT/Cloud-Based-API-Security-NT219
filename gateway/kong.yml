@@ -16,9 +16,22 @@ services:
               policy: local
           - name: cors
             config:
-              origins: ["http://localhost:6868"]
-              methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
-              headers: ["Accept", "Accept-Version", "Content-Length", "Content-MD5", "Content-Type", "Date", "Authorization"]
+              origins:
+                - "http://localhost:6868"
+              methods:
+                - "GET"
+                - "POST"
+                - "PUT"
+                - "PATCH"
+                - "DELETE"
+              headers:
+                - "Accept"
+                - "Accept-Version"
+                - "Content-Length"
+                - "Content-MD5"
+                - "Content-Type"
+                - "Date"
+                - "Authorization"
               credentials: true
           - name: jwt
           - name: opa
@@ -58,5 +71,11 @@ consumers:
         secret: "{vault://env/secret/payshield?key=CLIENT_SECRET}"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslsryKUoMOVnpdDm9ImWZXAKEMuGYg7kRxDn1WFWUN0VKLNxF7XmJUE+bYicRVm+SW1M2SFwa8yvNhfq4KFpl3s+2+uV1XlH6iAEuToBXruYua1B0eA4M9UWBvakJJXmRz2ekZxYYnUVylMJVxe5vSviZii7sEdUM5DBTz0NwYiHr7LJsz+BobO+pHLQbwvvsNteYVBCrnXN/gMD8UjRuaI4yQQT3amoHJ0b6R/hpf7MNlvceZG0XMedefNkNfHqrDcg5URbeAzYwiagcl6czKmSpmR+h8VX6X+EtTBYcM4lgvY8xb08ii+iBjVY71eH/rGXdr/2G/v+rPnQnbt+ZQIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslsryKUoMOVnpdDm9ImW
+          ZXAKEMuGYg7kRxDn1WFWUN0VKLNxF7XmJUE+bYicRVm+SW1M2SFwa8yvNhfq4KFp
+          l3s+2+uV1XlH6iAEuToBXruYua1B0eA4M9UWBvakJJXmRz2ekZxYYnUVylMJVxe5
+          vSviZii7sEdUM5DBTz0NwYiHr7LJsz+BobO+pHLQbwvvsNteYVBCrnXN/gMD8UjR
+          uaI4yQQT3amoHJ0b6R/hpf7MNlvceZG0XMedefNkNfHqrDcg5URbeAzYwiagcl6c
+          zKmSpmR+h8VX6X+EtTBYcM4lgvY8xb08ii+iBjVY71eH/rGXdr/2G/v+rPnQnbt+
+          ZQIDAQAB
           -----END PUBLIC KEY-----

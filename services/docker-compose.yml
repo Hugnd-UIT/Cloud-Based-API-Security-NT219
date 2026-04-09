@@ -14,13 +14,24 @@ services:
     environment:
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
     command: >
-      sh -c "apt-get update && apt-get install -y curl jq &&
-             echo '>>> Fetching VNPay Secrets from Vault...' &&
+      sh -c "apt-get update && apt-get install -y curl jq gawk openssl &&
+             echo '>>> Fetching VNPay & DB Certs from Vault...' &&
              curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield > /tmp/secrets.json &&
-             
+             curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/mtls > /tmp/mtls.json &&
+             mkdir -p /var/www/html/cert &&
+             mkdir -p /var/www/html/key &&
+             TEST_CERT=$$(jq -r '.data.data.laravel_cert' /tmp/mtls.json) &&
+             if [ \"$$TEST_CERT\" != \"null\" ] && [ -n \"$$TEST_CERT\" ]; then
+               echo '>>> [OK] Vault xịn! Ghi file cert cho App...' &&
+               jq -r '.data.data.laravel_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' | sed '/^$/d' > /var/www/html/cert/db_client.crt &&
+               jq -r '.data.data.laravel_key' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' | sed '/^$/d' > /tmp/db_client_tmp.key &&
+               openssl rsa -in /tmp/db_client_tmp.key -out /var/www/html/key/db_client.key &&
+               rm /tmp/db_client_tmp.key;
+             else
+               echo '>>> [LỖI] App khong lay duoc cert!' && cat /tmp/mtls.json;
+             fi &&
              VNP_TMNCODE=$$(jq -r '.data.data.VNP_TMNCODE' /tmp/secrets.json) &&
              VNP_HASHSECRET=$$(jq -r '.data.data.VNP_HASHSECRET' /tmp/secrets.json) &&
-             
              sed -i '/VNP_TMNCODE/d' .env &&
              sed -i '/VNP_HASHSECRET/d' .env &&
              echo \"VNP_TMNCODE=$$VNP_TMNCODE\" >> .env &&
@@ -36,10 +47,19 @@ services:
     environment:
       MYSQL_DATABASE: QlyLuong
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}      
+      MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    command: 
+      - --ssl-ca=/etc/mysql/certs/ca.crt
+      - --ssl-cert=/etc/mysql/certs/server.crt
+      - --ssl-key=/etc/mysql/certs/server.key
+      - --require_secure_transport=ON
     volumes:
+      - ./cert/ca.crt:/etc/mysql/certs/ca.crt:ro
+      - ./cert/db_server.crt:/etc/mysql/certs/server.crt:ro
+      - ./key/db_server.key:/etc/mysql/certs/server.key:ro
       - payshield_mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.0
@@ -53,7 +73,7 @@ services:
       KC_HOSTNAME_PORT: 8444
       KC_HOSTNAME_STRICT_HTTPS: "true"
       KC_DB: mysql
-      KC_DB_URL: jdbc:mysql://db:3306/QlyKeyCloak
+      KC_DB_URL: "jdbc:mysql://db:3306/QlyKeyCloak?useSSL=true&verifyServerCertificate=true&trustCertificateKeyStoreUrl=file:/opt/keycloak/conf/truststore.jks&trustCertificateKeyStorePassword=password"
       KC_DB_USERNAME: root
       KC_DB_PASSWORD: ${DB_PASSWORD}
       KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.crt
@@ -61,6 +81,7 @@ services:
     depends_on:
       - db
     volumes:
+      - ./cert/truststore.jks:/opt/keycloak/conf/truststore.jks
       - ./cert/keycloak.crt:/opt/keycloak/conf/server.crt
       - ./key/keycloak.key:/opt/keycloak/conf/server.key
     command: start-dev
@@ -71,7 +92,7 @@ services:
     user: "root"
     environment:
       KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: "/tmp/kong_run.yml" 
+      KONG_DECLARATIVE_CONFIG: "/tmp/kong_run.yml"
       KONG_CLIENT_SSL: "on"
       KONG_CLIENT_SSL_CERT: "/etc/kong/certs/kong.crt"
       KONG_CLIENT_SSL_CERT_KEY: "/etc/kong/certs/kong.key"
@@ -99,8 +120,6 @@ services:
              sed '/HTTP_CODE/d' /tmp/mtls_raw.txt > /tmp/mtls.json &&
              if [ \"$$HTTP_STATUS\" != \"200\" ]; then
                echo '>>> [FATAL ERROR] VAULT ACCESS DENIED (HTTP '$$HTTP_STATUS')!';
-               echo '>>> CAUSE: VAULT_APP_TOKEN IS MISSING OR EXPIRED.';
-               cat /tmp/mtls.json;
                sleep 60;
                exit 1;
              fi &&
@@ -115,18 +134,18 @@ services:
              sed -i \"s|__CLIENT_SECRET__|$$CLIENT_SECRET|g\" /tmp/kong_run.yml &&
              echo '>>> KONG GATEWAY IS READY FOR DEPLOYMENT!' &&
              /docker-entrypoint.sh kong docker-start"
-  
+
   waf:
     image: owasp/modsecurity-crs:nginx
     container_name: payshield_waf
     user: "root"
     ports:
-      - "8888:8443" 
+      - "8888:8443"
     environment:
       MODSEC_RULE_ENGINE: "On"
-      BACKEND: "https://payshield_kong:8443" 
-      PARANOIA: 3                   
-      ANOMALY_INBOUND: 3   
+      BACKEND: "https://payshield_kong:8443"
+      PARANOIA: 3
+      ANOMALY_INBOUND: 3
       ANOMALY_OUTBOUND: 3
       ALLOWED_METHODS: "GET HEAD POST PUT DELETE OPTIONS"
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
@@ -182,7 +201,7 @@ services:
       - "6868:8080"
     environment:
       SWAGGER_JSON: /docs/OpenAPI.yml
-      OAUTH_USE_PKCE: "true" 
+      OAUTH_USE_PKCE: "true"
     volumes:
       - ../docs:/docs
 
@@ -193,21 +212,28 @@ services:
     ports:
       - "8443:8443"
     environment:
-      VAULT_TOKEN: "${VAULT_APP_TOKEN}" 
+      VAULT_TOKEN: "${VAULT_APP_TOKEN}"
     volumes:
       - ../nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./cert/ca.crt:/etc/nginx/certs/ca.crt:ro
     depends_on:
       app:
         condition: service_started
       vault:
         condition: service_started
     command: >
-      sh -c "apt-get update && apt-get install -y curl jq &&
+      sh -c "apt-get update && apt-get install -y curl jq gawk &&
              mkdir -p /etc/nginx/certs &&
              curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/mtls > /tmp/mtls.json &&
-             jq -r '.data.data.laravel_cert' /tmp/mtls.json > /etc/nginx/certs/laravel.crt &&
-             jq -r '.data.data.laravel_key' /tmp/mtls.json > /etc/nginx/certs/laravel.key &&
-             jq -r '.data.data.ca_cert' /tmp/mtls.json > /etc/nginx/certs/ca.crt &&
+             TEST_CERT=$$(jq -r '.data.data.laravel_cert' /tmp/mtls.json) &&
+             if [ \"$$TEST_CERT\" != \"null\" ] && [ -n \"$$TEST_CERT\" ]; then
+                echo '>>> [OK] Vault xịn! Dang ghi file cert...' &&
+                jq -r '.data.data.laravel_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' | sed '/^$/d' > /etc/nginx/certs/laravel.crt &&
+                jq -r '.data.data.laravel_key' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' | sed '/^$/d' > /etc/nginx/certs/laravel.key;
+             else
+                echo '>>> [LỖI] Khong tim thay laravel_cert trong Vault!' &&
+                cat /tmp/mtls.json;
+             fi &&
              nginx -g 'daemon off;'"
 
   opa:
@@ -215,13 +241,13 @@ services:
     container_name: payshield_opa
     volumes:
       - ../opa/policy.rego:/fortress/policy.rego
-      - ./cert:/cert 
+      - ./cert:/cert
       - ./key:/key
     command: >
-      run --server 
-      --addr :8181 
-      --tls-cert-file /cert/opa.crt 
-      --tls-private-key-file /key/opa.key 
+      run --server
+      --addr :8181
+      --tls-cert-file /cert/opa.crt
+      --tls-private-key-file /key/opa.key
       --watch /fortress/policy.rego
 
 volumes:

@@ -16,8 +16,8 @@ allow if {
 allow if {
     "employee" in token_payload.realm_access.roles
     allowed_paths := [
-        "/api/dashboard/employee-data", 
-        "/api/profile", 
+        "/api/dashboard/employee-data",
+        "/api/profile",
         "/api/salary"
     ]
     some path in allowed_paths
