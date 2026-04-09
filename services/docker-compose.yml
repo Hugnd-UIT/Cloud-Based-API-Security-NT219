@@ -307,7 +307,7 @@ services:
     container_name: payshield_logstash
     user: root
     environment:
-      - VAULT_TOKEN=${VAULT_APP_TOKEN} # Sếp đang thiếu dòng này trong file gửi tui
+      - VAULT_TOKEN=${VAULT_APP_TOKEN} 
     volumes:
       - ../siem/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
       - payshield_certs_shared:/usr/share/logstash/config/certs:ro 

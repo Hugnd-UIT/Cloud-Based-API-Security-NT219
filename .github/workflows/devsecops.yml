@@ -20,6 +20,10 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
 
+      - name: Convert Repo Name
+        run: |
+          echo "REPO_LOWERCASE=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
       - name: Composer Dependency Scanning (SCA)
         working-directory: ./services
         run: |
@@ -68,7 +72,7 @@ jobs:
         with:
           context: ./services
           push: true
-          tags: ghcr.io/${{ github.repository }}/payshield-app:${{ github.sha }}
+          tags: ghcr.io/${{ env.REPO_LOWERCASE }}/payshield-app:latest
 
       - name: Scan Docker Image with Trivy
         uses: aquasecurity/trivy-action@master
