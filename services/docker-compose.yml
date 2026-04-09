@@ -6,6 +6,8 @@ services:
       - "8081:80"
     volumes:
       - .:/var/www/html
+      - payshield_certs_shared:/var/www/html/cert 
+      - payshield_keys_shared:/var/www/html/key
     depends_on:
       db:
         condition: service_started
@@ -23,19 +25,15 @@ services:
              TEST_CERT=$$(jq -r '.data.data.laravel_cert' /tmp/mtls.json) &&
              if [ \"$$TEST_CERT\" != \"null\" ] && [ -n \"$$TEST_CERT\" ]; then
                echo '>>> [OK] Vault xịn! Ghi file cert cho App...' &&
-               jq -r '.data.data.laravel_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' | sed '/^$/d' > /var/www/html/cert/db_client.crt &&
-               jq -r '.data.data.laravel_key' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' | sed '/^$/d' > /tmp/db_client_tmp.key &&
+               jq -r '.data.data.laravel_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /var/www/html/cert/db_client.crt &&
+               jq -r '.data.data.ca_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /var/www/html/cert/ca.crt &&
+               jq -r '.data.data.laravel_key' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /tmp/db_client_tmp.key &&
                openssl rsa -in /tmp/db_client_tmp.key -out /var/www/html/key/db_client.key &&
+               chmod -R 755 /var/www/html/cert /var/www/html/key && 
                rm /tmp/db_client_tmp.key;
              else
-               echo '>>> [LỖI] App khong lay duoc cert!' && cat /tmp/mtls.json;
+               echo '>>> [Lỗi] App khong lay duoc cert!' && cat /tmp/mtls.json;
              fi &&
-             VNP_TMNCODE=$$(jq -r '.data.data.VNP_TMNCODE' /tmp/secrets.json) &&
-             VNP_HASHSECRET=$$(jq -r '.data.data.VNP_HASHSECRET' /tmp/secrets.json) &&
-             sed -i '/VNP_TMNCODE/d' .env &&
-             sed -i '/VNP_HASHSECRET/d' .env &&
-             echo \"VNP_TMNCODE=$$VNP_TMNCODE\" >> .env &&
-             echo \"VNP_HASHSECRET=$$VNP_HASHSECRET\" >> .env &&
              php artisan config:clear && 
              apache2-foreground"
 
@@ -250,6 +248,69 @@ services:
       --tls-private-key-file /key/opa.key
       --watch /fortress/policy.rego
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: payshield_elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=Payshield@123
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/db_server.key
+      - xpack.security.http.ssl.certificate=certs/db_server.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca.crt
+    ports: ["9200:9200"]
+    volumes: 
+      - payshield_siem_data:/usr/share/elasticsearch/data
+      - ./cert/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt:ro
+      - ./cert/db_server.crt:/usr/share/elasticsearch/config/certs/db_server.crt:ro
+      - ./key/db_server.key:/usr/share/elasticsearch/config/certs/db_server.key:ro
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: payshield_kibana
+    ports: ["5601:5601"]
+    environment:
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=Payshield@123
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/db_client.crt
+      - SERVER_SSL_KEY=/usr/share/kibana/config/keys/db_client.key
+    volumes:
+      - payshield_certs_shared:/usr/share/kibana/config/certs:ro
+      - payshield_keys_shared:/usr/share/kibana/config/keys:ro
+    depends_on: ["elasticsearch"]
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: payshield_logstash
+    volumes:
+      - ../siem/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - payshield_certs_shared:/usr/share/logstash/config/certs:ro 
+      - payshield_keys_shared:/usr/share/logstash/config/keys:ro
+    depends_on: ["elasticsearch"]
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.0
+    container_name: payshield_filebeat
+    user: root
+    command: filebeat -e -strict.perms=false
+    volumes:
+      - ../siem/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - payshield_certs_shared:/etc/certs:ro
+      - payshield_keys_shared:/etc/keys:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: ["logstash"]
+
 volumes:
   payshield_mysql_data:
   payshield_vault_data:
+  payshield_siem_data:
+  payshield_certs_shared:
+  payshield_keys_shared:

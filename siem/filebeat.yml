@@ -1,0 +1,9 @@
+filebeat.inputs:
+- type: container
+  paths: ['/var/lib/docker/containers/*/*.log']
+output.logstash:
+  hosts: ["logstash:5044"]
+  ssl.certificate_authorities: ["/etc/certs/ca.crt"]
+  ssl.certificate: "/etc/certs/db_client.crt"
+  ssl.key: "/etc/keys/db_client.key"
+  ssl.verification_mode: "none" 
