@@ -251,13 +251,13 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
     container_name: payshield_elasticsearch
+    user: root
     environment:
       - node.name=elasticsearch
       - discovery.type=single-node
       - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=Payshield@123
+      - VAULT_TOKEN=${VAULT_APP_TOKEN} 
       - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-
       - xpack.security.http.ssl.enabled=true
       - xpack.security.http.ssl.key=certs/db_server.key
       - xpack.security.http.ssl.certificate=certs/db_server.crt
@@ -268,15 +268,23 @@ services:
       - ./cert/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt:ro
       - ./cert/db_server.crt:/usr/share/elasticsearch/config/certs/db_server.crt:ro
       - ./key/db_server.key:/usr/share/elasticsearch/config/certs/db_server.key:ro
+    command: >
+      sh -c "apt-get update && apt-get install -y curl jq gosu && # THÊM gosu VÀO ĐÂY
+             echo '>>> [ES] Dang lay mat khau tu Vault...' &&
+             PASS=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | jq -r '.data.data.ELK_PASSWORD') &&
+             export ELASTIC_PASSWORD=$$PASS &&
+             # GIỜ THÌ gosu ĐÃ CÓ SẴN ĐỂ CHẠY RỒI
+             exec gosu elasticsearch /usr/local/bin/docker-entrypoint.sh eswrapper"
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.0
     container_name: payshield_kibana
+    user: root
     ports: ["5601:5601"]
     environment:
       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
       - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=Payshield@123
+      - VAULT_TOKEN=${VAULT_APP_TOKEN}
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
       - SERVER_SSL_ENABLED=true
       - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/db_client.crt
@@ -284,16 +292,35 @@ services:
     volumes:
       - payshield_certs_shared:/usr/share/kibana/config/certs:ro
       - payshield_keys_shared:/usr/share/kibana/config/keys:ro
-    depends_on: ["elasticsearch"]
+    depends_on:
+      elasticsearch:
+        condition: service_started
+    command: >
+      sh -c "apt-get update && apt-get install -y curl jq &&
+             echo '>>> [Kibana] Dang lay mat khau tu Vault...' &&
+             PASS=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | jq -r '.data.data.ELK_PASSWORD') &&
+             export ELASTICSEARCH_PASSWORD=$$PASS &&
+             /usr/local/bin/kibana-docker --allow-root"
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.13.0
     container_name: payshield_logstash
+    user: root
+    environment:
+      - VAULT_TOKEN=${VAULT_APP_TOKEN} # Sếp đang thiếu dòng này trong file gửi tui
     volumes:
       - ../siem/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
       - payshield_certs_shared:/usr/share/logstash/config/certs:ro 
       - payshield_keys_shared:/usr/share/logstash/config/keys:ro
-    depends_on: ["elasticsearch"]
+    depends_on:
+      elasticsearch:
+        condition: service_started
+    command: >
+      sh -c "apt-get update && apt-get install -y curl jq &&
+             echo '>>> [Logstash] Dang lay mat khau tu Vault...' &&
+             PASS=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | jq -r '.data.data.ELK_PASSWORD') &&
+             export ELK_PASSWORD=$$PASS &&
+             /usr/local/bin/docker-entrypoint"
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.13.0
