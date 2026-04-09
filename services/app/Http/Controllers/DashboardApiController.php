@@ -11,11 +11,11 @@ use Carbon\Carbon;
 class DashboardApiController extends Controller
 {
     public function getManagerDashboard(Request $request) {
-        // Phân quyền xem dashboard quản lý
+        // Authorization check for manager dashboard
         $role = $request->get('user_roles');
 
         if (!in_array('manager', $role)) {
-            return response()->json(['message' => 'Lỗi 403: Tính làm hacker hay gì!'], 403);
+            return response()->json(['message' => 'Error 403: Unauthorized access!'], 403);
         }
 
         $month = Carbon::now()->month;
@@ -40,10 +40,10 @@ class DashboardApiController extends Controller
         return response()->json([
             'status' => true,
             'data' => [
-                ['title' => 'Thông báo 1', 'date' => '01/01/2026', 'content' => 'Nội dung 1'],
-                ['title' => 'Thông báo 2', 'date' => '02/01/2026', 'content' => 'Nội dung 2'],
-                ['title' => 'Thông báo 3', 'date' => '03/01/2026', 'content' => 'Nội dung 3'],
-                ['title' => 'Thông báo 4', 'date' => '04/01/2026', 'content' => 'Nội dung 4']
+                ['title' => 'Notification 1', 'date' => '01/01/2026', 'content' => 'Content 1'],
+                ['title' => 'Notification 2', 'date' => '02/01/2026', 'content' => 'Content 2'],
+                ['title' => 'Notification 3', 'date' => '03/01/2026', 'content' => 'Content 3'],
+                ['title' => 'Notification 4', 'date' => '04/01/2026', 'content' => 'Content 4']
             ]
         ]);
     }

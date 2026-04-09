@@ -4,8 +4,6 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:8888/api
-security:
-  - pkceAuth: []
 paths:
   /dashboard/manager-data:
     get:
@@ -13,6 +11,7 @@ paths:
       responses:
         "200":
           description: OK
+          
   /employees:
     get:
       summary: GET Roster
@@ -23,25 +22,25 @@ paths:
           schema:
             type: string
             example: "1' UNION SELECT username, password FROM users--"
-        - name: name
+        - name: pentest
           in: query
           description: Cross-Site Scripting
           schema:
             type: string
             example: "<script>alert('Hacked!')</script>"
-        - name: config
+        - name: pentest
           in: query
           description: Local File Inclusion
           schema:
             type: string
             example: "C:\\Windows\\System32\\cmd.exe"
-        - name: ip
+        - name: pentest
           in: query
           description: Command Injection
           schema:
             type: string
             example: "127.0.0.1;cat /etc/passwd"
-        - name: user
+        - name: pentest
           in: query
           description: Log Injection
           schema:
@@ -49,7 +48,10 @@ paths:
             example: "admin%0d%0a[INFO] User logged in successfully"
       responses:
         "200":
-          description: Created
+          description: OK
+        "403":
+          description: Block by WAF
+          
   /employees/{employeeId}:
     parameters:
       - name: employeeId
@@ -82,6 +84,7 @@ paths:
       responses:
         "200":
           description: OK
+          
   /payrolls:
     get:
       summary: GET Payroll
@@ -99,32 +102,41 @@ paths:
       responses:
         "200":
           description: OK
+          
   /dashboard/employee-data:
     get:
       summary: GET Dashboard Employee
       responses:
         "200":
           description: OK
+          
   /profile:
     get:
       summary: GET Profile
       responses:
         "200":
           description: OK
+          
   /salary:
     get:
       summary: GET Salary
       responses:
         "200":
           description: OK
-components:
-  securitySchemes:
-    pkceAuth:
-      type: oauth2
-      flows:
-        authorizationCode:
-          authorizationUrl: http://localhost:8888/realms/payshield-realm/protocol/openid-connect/auth
-          tokenUrl: http://localhost:8888/realms/payshield-realm/protocol/openid-connect/token
-          x-use-pkce: true
-          scopes:
-            openid: "Xác thực"
+
+  /vnpay/create:
+    post:
+      summary: POST VNPay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  example: 500000
+      responses:
+        "200":
+          description: OK

@@ -3,65 +3,79 @@ _transform: true
 
 services:
   - name: laravel-api-service
-    url: "http://payshield_app:80"
+    url: "https://webserver:8443"
     routes:
       - name: laravel-api-route
         paths:
           - /api
         strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              policy: local
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:6868"
+              methods:
+                - "GET"
+                - "POST"
+                - "PUT"
+                - "PATCH"
+                - "DELETE"
+              headers:
+                - "Accept"
+                - "Accept-Version"
+                - "Content-Length"
+                - "Content-MD5"
+                - "Content-Type"
+                - "Date"
+                - "Authorization"
+              credentials: true
+          - name: jwt
+          - name: opa
+            config:
+              opa_server: "https://opa:8181"
+              opa_path: "/v1/data/payshield/authz"
 
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 10
-          policy: local
-      
-      - name: jwt
-        config:
-          claims_to_verify:
-            - exp
-
-      - name: cors
-        config:
-          origins:
-            - "http://localhost:6868"
-          methods:
-            - GET
-            - POST
-            - PUT
-            - PATCH
-            - DELETE
-          headers:
-            - Accept
-            - Accept-Version
-            - Content-Length
-            - Content-MD5
-            - Content-Type
-            - Date
-            - Authorization
-          credentials: true
-
-  - name: keycloak-service
-    url: http://payshield_keycloak:8080
-    routes:
-      - name: keycloak-route
-        paths:          
-          - /realms
+      - name: vnpay-ipn-route
+        paths:
+          - /api/vnpay-ipn
         strip_path: false
-        preserve_host: true
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 5 
-          policy: local
+        methods:
+          - GET
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              policy: local
+      
+      - name: vnpay-return-route
+        paths:
+          - /api/vnpay-return
+        strip_path: false
+        methods:
+          - GET
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              policy: local
 
-consumers:                                                
+consumers:
   - username: payshield-users
     jwt_secrets:
       - algorithm: RS256
-        secret: "{vault://hcv/secret/payshield?key=CLIENT_SECRET}"
-        key: "http://localhost:8888/realms/payshield-realm"
+        key: "https://localhost:8444/realms/payshield-realm"
+        secret: "{vault://env/secret/payshield?key=CLIENT_SECRET}"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyo6T5aZ8aRphvp2SltkoWg2Zwdt//hEEDspsE6TEe8b1sPSTwfw5wu80TvqoKGkQuLKR3FStTHc9iCgDQTMXBetMei9IqJWOngyi3neq9xQhrrdOiLShW1v3JshzrIKlNhjZMprwBwNiW4LqGxW3g32UMULc7ASe10+QLeH+oq4ke6psHWlA3RDDIgbokewBONg3niqCmpC6Uu9P4mHkdRSKbZmY2K7buqdTwA90FArifveG2FX4EfDqqFf1wj7bav1+Ar5KQyPa63SUSKzDlbqjLeQYd6qg/38qfmwE8NkTPGJXloPbm/EpCXwwAzp9UH1pTblIxxCcp3m8JQSYwIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslsryKUoMOVnpdDm9ImW
+          ZXAKEMuGYg7kRxDn1WFWUN0VKLNxF7XmJUE+bYicRVm+SW1M2SFwa8yvNhfq4KFp
+          l3s+2+uV1XlH6iAEuToBXruYua1B0eA4M9UWBvakJJXmRz2ekZxYYnUVylMJVxe5
+          vSviZii7sEdUM5DBTz0NwYiHr7LJsz+BobO+pHLQbwvvsNteYVBCrnXN/gMD8UjR
+          uaI4yQQT3amoHJ0b6R/hpf7MNlvceZG0XMedefNkNfHqrDcg5URbeAzYwiagcl6c
+          zKmSpmR+h8VX6X+EtTBYcM4lgvY8xb08ii+iBjVY71eH/rGXdr/2G/v+rPnQnbt+
+          ZQIDAQAB
           -----END PUBLIC KEY-----

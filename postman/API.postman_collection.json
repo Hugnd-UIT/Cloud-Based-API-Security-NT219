@@ -13,8 +13,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/dashboard/manager-data",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/dashboard/manager-data",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -34,8 +34,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -54,8 +54,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees/NV000",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees/NV000",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -84,8 +84,8 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8888/api/employees",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -113,8 +113,8 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8888/api/employees/NV000",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees/NV000",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -134,8 +134,8 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees/NV000",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees/NV000",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -155,8 +155,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/payrolls?month=3&year=2026",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/payrolls?month=3&year=2026",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -185,8 +185,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/dashboard/employee-data",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/dashboard/employee-data",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -206,8 +206,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/profile",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/profile",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -226,8 +226,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/salary",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/salary",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -241,65 +241,13 @@
       "response": []
     },
     {
-      "name": "Log Injection",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8888/api/employees?user=admin%0d%0a[INFO] User logged in successfully",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8888",
-          "path": [
-            "api",
-            "employees"
-          ],
-          "query": [
-            {
-              "key": "user",
-              "value": "admin%0d%0a[INFO] User logged in successfully"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Local File Inclusion",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8888/api/employees?config=C:\\Windows\\System32\\cmd.exe",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8888",
-          "path": [
-            "api",
-            "employees"
-          ],
-          "query": [
-            {
-              "key": "config",
-              "value": "C:\\Windows\\System32\\cmd.exe"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "Command Injection",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -324,8 +272,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?name=<script>alert('Hacked!')</script>",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?name=<script>alert('Hacked!')</script>",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -350,8 +298,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
-          "protocol": "http",
+          "raw": "https://localhost:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
+          "protocol": "https",
           "host": [
             "localhost"
           ],
@@ -369,11 +317,159 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "VNPay",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"amount\": 500000\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://localhost:8888/api/vnpay/create",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "vnpay",
+            "create"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "VNPay",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:8888/api/vnpay-ipn?vnp_Amount=50000000&vnp_BankCode=NCB&vnp_BankTranNo=VNP15488360&vnp_CardType=ATM&vnp_OrderInfo=Salary+advance+for+order%3A+20260408152003982&vnp_PayDate=20260408222052&vnp_ResponseCode=00&vnp_TmnCode=A82AXODV&vnp_TransactionNo=15488360&vnp_TransactionStatus=00&vnp_TxnRef=20260408152003982&vnp_SecureHash=5ec405b45724d111ea9dea9c491115d43a5676c9ad6b54e9b905ba89c029265d7198d3d43c0e56437f905d218ae7aee3ccdd8d5f45483e4d90929cea07f40335",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "8888",
+          "path": [
+            "api",
+            "vnpay-ipn"
+          ],
+          "query": [
+            {
+              "key": "vnp_Amount",
+              "value": "50000000"
+            },
+            {
+              "key": "vnp_BankCode",
+              "value": "NCB"
+            },
+            {
+              "key": "vnp_BankTranNo",
+              "value": "VNP15488360"
+            },
+            {
+              "key": "vnp_CardType",
+              "value": "ATM"
+            },
+            {
+              "key": "vnp_OrderInfo",
+              "value": "Salary+advance+for+order%3A+20260408152003982"
+            },
+            {
+              "key": "vnp_PayDate",
+              "value": "20260408222052"
+            },
+            {
+              "key": "vnp_ResponseCode",
+              "value": "00"
+            },
+            {
+              "key": "vnp_TmnCode",
+              "value": "A82AXODV"
+            },
+            {
+              "key": "vnp_TransactionNo",
+              "value": "15488360"
+            },
+            {
+              "key": "vnp_TransactionStatus",
+              "value": "00"
+            },
+            {
+              "key": "vnp_TxnRef",
+              "value": "20260408152003982"
+            },
+            {
+              "key": "vnp_SecureHash",
+              "value": "5ec405b45724d111ea9dea9c491115d43a5676c9ad6b54e9b905ba89c029265d7198d3d43c0e56437f905d218ae7aee3ccdd8d5f45483e4d90929cea07f40335"
+            }
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "auth": {
     "type": "oauth2",
     "oauth2": [
+      {
+        "key": "accessTokenUrl",
+        "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/token",
+        "type": "string"
+      },
+      {
+        "key": "authUrl",
+        "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/auth",
+        "type": "string"
+      },
+      {
+        "key": "grant_type",
+        "value": "authorization_code_with_pkce",
+        "type": "string"
+      },
+      {
+        "key": "tokenType",
+        "value": "Bearer",
+        "type": "string"
+      },
+      {
+        "key": "accessToken",
+        "value": "{{Token}}",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "{{Client ID}}",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "{{Client Secret}}",
+        "type": "string"
+      },
       {
         "key": "scope",
         "value": "openid",
@@ -385,34 +481,9 @@
         "type": "string"
       },
       {
-        "key": "clientSecret",
-        "value": "3cC8ZCUMYjWu7AysEiomW3SBcssCrave",
-        "type": "string"
-      },
-      {
-        "key": "clientId",
-        "value": "payshield-app",
-        "type": "string"
-      },
-      {
-        "key": "accessTokenUrl",
-        "value": "http://localhost:8888/realms/payshield-realm/protocol/openid-connect/token",
-        "type": "string"
-      },
-      {
-        "key": "authUrl",
-        "value": "http://localhost:8888/realms/payshield-realm/protocol/openid-connect/auth",
-        "type": "string"
-      },
-      {
         "key": "useBrowser",
         "value": true,
         "type": "boolean"
-      },
-      {
-        "key": "grant_type",
-        "value": "authorization_code_with_pkce",
-        "type": "string"
       },
       {
         "key": "addTokenTo",
@@ -443,6 +514,16 @@
           ""
         ]
       }
+    }
+  ],
+  "variable": [
+    {
+      "key": "Client ID",
+      "value": ""
+    },
+    {
+      "key": "Client Secret",
+      "value": ""
     }
   ]
 }
