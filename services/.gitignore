@@ -1,4 +1,3 @@
-# Laravel Defaults
 /vendor
 /node_modules
 /public/storage
@@ -12,8 +11,6 @@
 .phpactor.json
 .vscode
 .idea
-
-# Security Artifacts (KHÔNG ĐƯỢC PUSH)
 **/cert/
 **/key/
 *.crt
@@ -22,22 +19,15 @@
 *.pub
 *.jks
 *.p12
-
-# Infrastructure Secrets
 unseal_vault.ps1
 vault-unseal.ps1
 /kms/*.ps1
 .env
 auth.json
-
-# Databases & Runtime Data
-init.sql
 **/mysql_data/
 **/vault_data/
 **/elasticsearch_data/
 *.log
-
-# OS & Misc
 .DS_Store
 Thumbs.db
 Homestead.json
