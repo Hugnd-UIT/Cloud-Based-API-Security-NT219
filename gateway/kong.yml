@@ -58,11 +58,5 @@ consumers:
         secret: "{vault://env/secret/payshield?key=CLIENT_SECRET}"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyo6T5aZ8aRphvp2Sltk
-          oWg2Zwdt//hEEDspsE6TEe8b1sPSTwfw5wu80TvqoKGkQuLKR3FStTHc9iCgDQTM
-          XBetMei9IqJWOngyi3neq9xQhrrdOiLShW1v3JshzrIKlNhjZMprwBwNiW4LqGxW
-          3g32UMULc7ASe10+QLeH+oq4ke6psHWlA3RDDIgbokewBONg3niqCmpC6Uu9P4mH
-          kdRSKbZmY2K7buqdTwA90FArifveG2FX4EfDqqFf1wj7bav1+Ar5KQyPa63SUSKz
-          DlbqjLeQYd6qg/38qfmwE8NkTPGJXloPbm/EpCXwwAzp9UH1pTblIxxCcp3m8JQS
-          YwIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslsryKUoMOVnpdDm9ImWZXAKEMuGYg7kRxDn1WFWUN0VKLNxF7XmJUE+bYicRVm+SW1M2SFwa8yvNhfq4KFpl3s+2+uV1XlH6iAEuToBXruYua1B0eA4M9UWBvakJJXmRz2ekZxYYnUVylMJVxe5vSviZii7sEdUM5DBTz0NwYiHr7LJsz+BobO+pHLQbwvvsNteYVBCrnXN/gMD8UjRuaI4yQQT3amoHJ0b6R/hpf7MNlvceZG0XMedefNkNfHqrDcg5URbeAzYwiagcl6czKmSpmR+h8VX6X+EtTBYcM4lgvY8xb08ii+iBjVY71eH/rGXdr/2G/v+rPnQnbt+ZQIDAQAB
           -----END PUBLIC KEY-----
