@@ -88,6 +88,7 @@ jobs:
 
       - name: Sign the Docker Image
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAGS: ghcr.io/${{ env.REPO_LOWERCASE }}/payshield-app:latest
         run: |
           cosign sign --yes ${TAGS}
