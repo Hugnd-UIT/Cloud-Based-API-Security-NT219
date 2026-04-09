@@ -3,7 +3,7 @@ _transform: true
 
 services:
   - name: laravel-api-service
-    url: "https://nginx:8443"
+    url: "https://webserver:8443"
     routes:
       - name: laravel-api-route
         paths:
