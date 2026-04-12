@@ -38,11 +38,8 @@ function OpaHandler:access(conf)
   local opa_response = cjson.decode(res.body)
   if not opa_response or (opa_response.result and opa_response.result.allow ~= true) then
     return kong.response.exit(403, { 
-    message = "Access Denied by OPA Policy",
-    debug_kong_headers = headers, 
-      -- In toàn bộ phản hồi gốc của OPA
-    debug_opa_raw = opa_response.result
-  })
+      message = "Access Denied by OPA Policy",
+    })
   end
 end
 
