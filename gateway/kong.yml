@@ -1,39 +1,55 @@
 _format_version: "3.0"
 _transform: true
 
+certificates:
+  - id: "44444444-4444-4444-4444-444444444444"
+    cert: |
+      __KONG_CERT_CONTENT__
+    key: |
+      __KONG_KEY_CONTENT__
+
 services:
   - name: laravel-api-service
     url: "https://webserver:8443"
+    client_certificate: "44444444-4444-4444-4444-444444444444"
+
     routes:
       - name: laravel-api-route
         paths:
           - /api
         strip_path: false
+
         plugins:
           - name: rate-limiting
             config:
               minute: 10
               policy: local
+
           - name: cors
             config:
               origins:
                 - "http://localhost:6868"
               methods:
-                - "GET"
-                - "POST"
-                - "PUT"
-                - "PATCH"
-                - "DELETE"
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
               headers:
-                - "Accept"
-                - "Accept-Version"
-                - "Content-Length"
-                - "Content-MD5"
-                - "Content-Type"
-                - "Date"
-                - "Authorization"
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
               credentials: true
+
           - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+
           - name: opa
             config:
               opa_server: "https://opa:8181"
@@ -42,21 +58,23 @@ services:
       - name: vnpay-ipn-route
         paths:
           - /api/vnpay-ipn
-        strip_path: false
         methods:
           - GET
+        strip_path: false
+
         plugins:
           - name: rate-limiting
             config:
               minute: 20
               policy: local
-      
+
       - name: vnpay-return-route
         paths:
           - /api/vnpay-return
-        strip_path: false
         methods:
           - GET
+        strip_path: false
+
         plugins:
           - name: rate-limiting
             config:
