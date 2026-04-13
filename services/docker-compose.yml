@@ -6,12 +6,7 @@ services:
     ports:
       - "8200:8200"
     environment:
-      VAULT_LOCAL_CONFIG: >
-        {"storage":{"file":{"path":"/vault/file"}},
-         "listener":{"tcp":{"address":"0.0.0.0:8200","tls_disable":"0",
-         "tls_cert_file":"/vault/certs/vault.crt",
-         "tls_key_file":"/vault/certs/vault.key"}},
-         "ui":true,"disable_mlock":true}
+      VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/file"}}, "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable": "0", "tls_cert_file": "/vault/certs/vault.crt", "tls_key_file": "/vault/certs/vault.key", "tls_require_and_verify_client_cert": "true", "tls_client_ca_file": "/vault/certs/ca.crt"}}, "ui": true, "disable_mlock": true}'
     cap_add:
       - IPC_LOCK
     command: server
@@ -38,40 +33,6 @@ services:
       - ./cert/db_server.crt:/etc/mysql/certs/server.crt:ro
       - ./key/db_server.key:/etc/mysql/certs/server.key:ro
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
-    container_name: payshield_elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=true
-
-      # HTTP
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=certs/elk.key
-      - xpack.security.http.ssl.certificate=certs/elk.crt
-      - xpack.security.http.ssl.certificate_authorities=certs/ca.crt
-      - xpack.security.http.ssl.client_authentication=required
-
-      # TRANSPORT
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=certs/elk.key
-      - xpack.security.transport.ssl.certificate=certs/elk.crt
-      - xpack.security.transport.ssl.certificate_authorities=certs/ca.crt
-
-      - VAULT_TOKEN=${VAULT_APP_TOKEN}
-    volumes:
-      - ./cert/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt:ro
-      - ./cert/elk.crt:/usr/share/elasticsearch/config/certs/elk.crt:ro
-      - ./key/elk.key:/usr/share/elasticsearch/config/certs/elk.key:ro
-    command: >
-      sh -c "
-      export ELASTIC_PASSWORD=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\"
-      https://payshield_vault:8200/v1/secret/data/payshield
-      | jq -r '.data.data.ELK_PASSWORD');
-      exec /usr/local/bin/docker-entrypoint.sh eswrapper
-      "
 
 
   keycloak:
@@ -160,35 +121,30 @@ services:
       KONG_DATABASE: off
       KONG_DECLARATIVE_CONFIG: /tmp/kong_run.yml
       KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
-
       KONG_SSL_CERT: /tmp/certs/kong.crt
       KONG_SSL_CERT_KEY: /tmp/certs/kong.key
-
       KONG_NGINX_PROXY_SSL_VERIFY_CLIENT: on
       KONG_NGINX_PROXY_SSL_CLIENT_CERTIFICATE: /tmp/certs/ca.crt
-
       KONG_CLIENT_SSL: on
       KONG_CLIENT_SSL_CERT: /tmp/certs/kong.crt
       KONG_CLIENT_SSL_CERT_KEY: /tmp/certs/kong.key
-
       KONG_LUA_SSL_TRUSTED_CERTIFICATE: /tmp/certs/ca.crt
-
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
       KONG_PLUGINS: bundled,opa
-
     volumes:
       - ../gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro
       - ../pdp:/usr/local/share/lua/5.1/kong/plugins/opa:ro
-
+      # [QUAN TRỌNG] Mount bộ thẻ Bootstrap để nói chuyện với Vault qua mTLS
+      - ./cert/ca.crt:/tmp/bootstrap/ca.crt:ro
+      - ./cert/client.crt:/tmp/bootstrap/client.crt:ro
+      - ./key/client.key:/tmp/bootstrap/client.key:ro
     command: >
       sh -c "
       which jq >/dev/null || (apt-get update && apt-get install -y curl jq gawk);
-
       mkdir -p /tmp/certs;
-      echo 'Fetching certs from Vault...';
+      echo 'Giao tiếp mTLS với Vault để lấy chứng chỉ...';
 
-      curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\"
-      https://payshield_vault:8200/v1/secret/data/mtls > /tmp/mtls.json;
+      curl -s --cacert /tmp/bootstrap/ca.crt --cert /tmp/bootstrap/client.crt --key /tmp/bootstrap/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/mtls > /tmp/mtls.json;
 
       jq -r '.data.data.kong_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /tmp/certs/kong.crt;
       jq -r '.data.data.kong_key'  /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /tmp/certs/kong.key;
@@ -197,22 +153,17 @@ services:
       sed 's/^/      /' /tmp/certs/kong.crt > /tmp/certs/kong_indented.crt;
       sed 's/^/      /' /tmp/certs/kong.key > /tmp/certs/kong_indented.key;
 
-      CLIENT_SECRET=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\"
-      https://payshield_vault:8200/v1/secret/data/payshield
-      | jq -r '.data.data.CLIENT_SECRET');
+      CLIENT_SECRET=$$(curl -s --cacert /tmp/bootstrap/ca.crt --cert /tmp/bootstrap/client.crt --key /tmp/bootstrap/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | jq -r '.data.data.CLIENT_SECRET');
 
       cp /usr/local/kong/declarative/kong.yml /tmp/kong_run.yml;
-
       sed -i \"s|__CLIENT_SECRET__|$$CLIENT_SECRET|g\" /tmp/kong_run.yml;
       sed -i \"/__KONG_CERT_CONTENT__/r /tmp/certs/kong_indented.crt\" /tmp/kong_run.yml;
       sed -i \"/__KONG_CERT_CONTENT__/d\" /tmp/kong_run.yml;
       sed -i \"/__KONG_KEY_CONTENT__/r /tmp/certs/kong_indented.key\" /tmp/kong_run.yml;
       sed -i \"/__KONG_KEY_CONTENT__/d\" /tmp/kong_run.yml;
 
-      echo 'Kong Gateway is starting with mTLS...';
-
-      /docker-entrypoint.sh kong docker-start
-      "
+      echo 'Kong đã nhận chứng chỉ từ Vault. Đang khởi động...';
+      /docker-entrypoint.sh kong docker-start"
 
 
   waf:
@@ -235,25 +186,40 @@ services:
       - ./cert/ca.crt:/etc/nginx/certs/ca.crt:ro
 
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.13.0
-    container_name: payshield_kibana
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: payshield_elasticsearch
+    ports: 
+      - "9200:9200"
     environment:
-      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+
+      # HTTP
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elk.key
+      - xpack.security.http.ssl.certificate=certs/elk.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca.crt
+      - xpack.security.http.ssl.client_authentication=optional
+
+      # TCP
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elk.key
+      - xpack.security.transport.ssl.certificate=certs/elk.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca.crt
+
       - VAULT_TOKEN=${VAULT_APP_TOKEN}
-      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/elk.crt
-      - SERVER_SSL_KEY=/usr/share/kibana/config/keys/elk.key
     volumes:
-      - ./cert/elk.crt:/usr/share/kibana/config/certs/elk.crt:ro
-      - ./key/elk.key:/usr/share/kibana/config/keys/elk.key:ro
+      - payshield_siem_data:/usr/share/elasticsearch/data
+      - ./cert/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt:ro
+      - ./cert/client.crt:/usr/share/elasticsearch/config/certs/client.crt:ro
+      - ./key/client.key:/usr/share/elasticsearch/config/certs/client.key:ro
+      - ./cert/elk.crt:/usr/share/elasticsearch/config/certs/elk.crt:ro
+      - ./key/elk.key:/usr/share/elasticsearch/config/certs/elk.key:ro
     command: >
       sh -c "
-      export ELASTICSEARCH_PASSWORD=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\"
-      https://payshield_vault:8200/v1/secret/data/payshield
-      | jq -r '.data.data.ELK_PASSWORD');
-
-      /usr/local/bin/kibana-docker --allow-root
-      "
+      export ELASTIC_PASSWORD=$$(curl -s --cacert /usr/share/elasticsearch/config/certs/ca.crt --cert /usr/share/elasticsearch/config/certs/client.crt --key /usr/share/elasticsearch/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      exec /usr/local/bin/docker-entrypoint.sh eswrapper"
 
 
   logstash:
@@ -264,26 +230,56 @@ services:
     volumes:
       - ../siem/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
       - ./cert/ca.crt:/usr/share/logstash/config/certs/ca.crt:ro
+      - ./cert/client.crt:/usr/share/logstash/config/certs/client.crt:ro
+      - ./key/client.key:/usr/share/logstash/config/certs/client.key:ro
       - ./cert/elk.crt:/usr/share/logstash/config/certs/elk.crt:ro
       - ./key/elk.key:/usr/share/logstash/config/certs/elk.key:ro
     command: >
       sh -c "
-      export ELK_PASSWORD=$$(curl -s -k -H \"X-Vault-Token: $$VAULT_TOKEN\"
-      https://payshield_vault:8200/v1/secret/data/payshield
-      | jq -r '.data.data.ELK_PASSWORD');
+      export ELK_PASSWORD=$$(curl -s --cacert /usr/share/logstash/config/certs/ca.crt --cert /usr/share/logstash/config/certs/client.crt --key /usr/share/logstash/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      /usr/local/bin/docker-entrypoint"
 
-      /usr/local/bin/docker-entrypoint
-      "
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: payshield_kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - VAULT_TOKEN=${VAULT_APP_TOKEN}
+      - ELASTICSEARCH_USERNAME=kibana_system 
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/elk.crt
+      - SERVER_SSL_KEY=/usr/share/kibana/config/certs/elk.key
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca.crt
+      - ELASTICSEARCH_SSL_CERTIFICATE=/usr/share/kibana/config/certs/elk.crt
+      - ELASTICSEARCH_SSL_KEY=/usr/share/kibana/config/certs/elk.key
+      - NODE_EXTRA_CA_CERTS=/usr/share/kibana/config/certs/ca.crt
+    volumes:
+      - ./cert/ca.crt:/usr/share/kibana/config/certs/ca.crt:ro
+      - ./cert/client.crt:/usr/share/kibana/config/certs/client.crt:ro
+      - ./key/client.key:/usr/share/kibana/config/certs/client.key:ro
+      - ./cert/elk.crt:/usr/share/kibana/config/certs/elk.crt:ro
+      - ./key/elk.key:/usr/share/kibana/config/certs/elk.key:ro
+    command: >
+      sh -c "
+      export ELASTICSEARCH_PASSWORD=$$(curl -s --cacert /usr/share/kibana/config/certs/ca.crt --cert /usr/share/kibana/config/certs/client.crt --key /usr/share/kibana/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      /usr/local/bin/kibana-docker --allow-root"
 
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.13.0
     container_name: payshield_filebeat
+    user: root
     volumes:
       - ../siem/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./cert/ca.crt:/etc/certs/ca.crt:ro
-      - ./cert/db_client.crt:/etc/certs/db_client.crt:ro
-      - ./key/db_client.key:/etc/keys/db_client.key:ro
+      - ./cert/client.crt:/etc/certs/client.crt:ro
+      - ./key/client.key:/etc/keys/client.key:ro
     command: filebeat -e -strict.perms=false
 
 

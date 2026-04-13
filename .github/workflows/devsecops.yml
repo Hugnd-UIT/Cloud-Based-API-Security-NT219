@@ -53,7 +53,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # BƯỚC QUAN TRỌNG: Phải đưa nó vào đây
       - name: Convert Repo Name
         run: |
           echo "REPO_LOWERCASE=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
