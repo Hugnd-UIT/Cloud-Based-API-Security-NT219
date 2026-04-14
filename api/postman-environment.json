@@ -1,0 +1,52 @@
+{
+	"id": "66255fd4-aacc-4d55-8122-d4e577ce412f",
+	"name": "Payshield",
+	"values": [
+		{
+			"key": "URL",
+			"value": "https://localhost:8888/api",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "Keycloak",
+			"value": "https://localhost:8888/realms/payshield-realm/protocol/openid-connect/token",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "Secret",
+			"value": "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "AccessToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "Token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "dpop_private_key",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "dpop_public_key",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"color": 120,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-04-14T12:53:10.211Z",
+	"_postman_exported_using": "Postman/12.5.7"
+}

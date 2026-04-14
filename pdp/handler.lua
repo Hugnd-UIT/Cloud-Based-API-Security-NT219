@@ -13,13 +13,15 @@ function OpaHandler:access(conf)
   local jwt_header = kong.request.get_header("Authorization")
   if not jwt_header then return kong.response.exit(401, { message = "Missing Token" }) end
 
+  local headers = kong.request.get_headers()
+  
   local payload = {
     input = {
       request = {
         http = {
           method = kong.request.get_method(),
           path = kong.request.get_path(),
-          headers = { authorization = jwt_header }
+          headers = headers 
         }
       }
     }
@@ -35,7 +37,9 @@ function OpaHandler:access(conf)
 
   local opa_response = cjson.decode(res.body)
   if not opa_response or (opa_response.result and opa_response.result.allow ~= true) then
-    return kong.response.exit(403, { message = "Access Denied by OPA Policy" })
+    return kong.response.exit(403, { 
+      message = "Access Denied by OPA Policy",
+    })
   end
 end
 

@@ -1,11 +1,28 @@
-﻿Write-Host "Unsealing Vault..." -ForegroundColor Yellow
+﻿Write-Host "--- Loading Environment Variables from services folder ---" -ForegroundColor Gray
+$envPath = "../services/.env" 
 
-docker exec payshield_vault vault operator unseal -reset '-ca-cert=/vault/certs/ca.crt'
+if (Test-Path $envPath) {
+    Get-Content $envPath | Where-Object { $_ -match '=' -and $_ -notmatch '^#' } | ForEach-Object {
+        $name, $value = $_.Split('=', 2)
+        [System.Environment]::SetEnvironmentVariable($name.Trim(), $value.Trim(), "Process")
+    }
+} else {
+    Write-Error "File .env không tìm thấy tại: $envPath ! Vui lòng kiểm tra lại."
+    exit
+}
 
-docker exec payshield_vault vault operator unseal '-ca-cert=/vault/certs/ca.crt' lzKSZCVAcUJPetWgsAuCOI3GBQj7CAhxNk/PsAmHcHii
-docker exec payshield_vault vault operator unseal '-ca-cert=/vault/certs/ca.crt' F9gZ4tHXpOinWl0TZkm6gNntjlyvibYJqfyZQuxk0YYs
-docker exec payshield_vault vault operator unseal '-ca-cert=/vault/certs/ca.crt' rzIHBFwOBmuEtJgCO4qYL1VegNn5NOyfrLsL5PsnC3xU
-docker exec payshield_vault vault operator unseal '-ca-cert=/vault/certs/ca.crt' 1fPY1hB1/SA2En0I48uZ4yagHWcf9yQzBr7OpM1bhcaH
-docker exec payshield_vault vault operator unseal '-ca-cert=/vault/certs/ca.crt' Dhc2mGDQ2jMVTX48F1f/SXsOyLjiQwh83DE+urkOL7B+
+$common_flags = @(
+    "-ca-cert=/vault/certs/ca.crt",
+    "-client-cert=/vault/certs/vault.crt",
+    "-client-key=/vault/certs/vault.key"
+)
 
-Write-Host "Success!" -ForegroundColor Green
+Write-Host "Unsealing Vault..." -ForegroundColor Yellow
+
+docker exec payshield_vault vault operator unseal $common_flags $env:VAULT_KEY1
+docker exec payshield_vault vault operator unseal $common_flags $env:VAULT_KEY2
+docker exec payshield_vault vault operator unseal $common_flags $env:VAULT_KEY3
+docker exec payshield_vault vault operator unseal $common_flags $env:VAULT_KEY4
+docker exec payshield_vault vault operator unseal $common_flags $env:VAULT_KEY5
+
+Write-Host "--- Success! Vault is open. ---" -ForegroundColor Green

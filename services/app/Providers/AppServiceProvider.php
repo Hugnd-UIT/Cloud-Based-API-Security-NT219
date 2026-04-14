@@ -23,30 +23,37 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $vaultUrl = env('VAULT_URL', 'http://payshield_vault:8200') . '/v1/secret/data/payshield';
+        $vaultUrl = env('VAULT_URL', 'https://payshield_vault:8200') . '/v1/secret/data/payshield';
         $token    = env('VAULT_APP_TOKEN');
 
-        try {
-            /** @var \Illuminate\Http\Client\Response $response */
-            $response = Http::withHeaders([
-                'X-Vault-Token' => $token
-            ])->timeout(3)->get($vaultUrl);
+        if ($token) {
+            try {
+                /** @var \Illuminate\Http\Client\Response $response */
+                $response = Http::withOptions([
+                    'cert'    => [base_path('cert/client.crt')], 
+                    'ssl_key' => [base_path('key/client.key')],
+                    'verify'  => base_path('cert/ca.crt'),
+                ])->withHeaders([
+                    'X-Vault-Token' => $token
+                ])->timeout(5)->get($vaultUrl);
 
-            if ($response->successful()) {
-                $secrets = $response->json()['data']['data'];
-
-                Config::set('app.key', $secrets['APP_KEY']);
-                Config::set('database.connections.mysql.username', $secrets['DB_USERNAME']);
-                Config::set('database.connections.mysql.password', $secrets['DB_PASSWORD']);
-                Config::set('database.connections.mysql.database', $secrets['DB_DATABASE']);
-                Config::set('services.keycloak.admin_user', $secrets['KC_ADMIN_USER'] ?? null);
-                Config::set('services.keycloak.admin_password', $secrets['KC_ADMIN_PASSWORD'] ?? null);
-                Config::set('services.payshield.client_secret', $secrets['CLIENT_SECRET'] ?? null);
-                Config::set('services.payshield.webhook_secret', $secrets['WEBHOOK_SECRET'] ?? null);
-                DB::purge('mysql');
+                if ($response->successful()) {
+                    $secrets = $response->json()['data']['data'];
+                    Config::set('app.key', $secrets['APP_KEY'] ?? null);
+                    Config::set('database.connections.mysql.username', $secrets['DB_USERNAME'] ?? null);
+                    Config::set('database.connections.mysql.password', $secrets['DB_PASSWORD'] ?? null);
+                    Config::set('database.connections.mysql.database', $secrets['DB_DATABASE'] ?? null);
+                    Config::set('services.keycloak.admin_user', $secrets['KC_ADMIN_USER'] ?? null);
+                    Config::set('services.keycloak.admin_password', $secrets['KC_ADMIN_PASSWORD'] ?? null);
+                    Config::set('services.payshield.client_secret', $secrets['CLIENT_SECRET'] ?? null);
+                    Config::set('services.payshield.webhook_secret', $secrets['WEBHOOK_SECRET'] ?? null);
+                    DB::purge('mysql');
+                } else {
+                    Log::error('Vault mTLS Rejected - Status: ' . $response->status() . ' - ' . $response->body());
+                }
+            } catch (\Exception $e) {
+                Log::error('Cannot connect to Vault using mTLS: ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error('Cannot connect to Vault: ' . $e->getMessage());
         }
     }
 }
