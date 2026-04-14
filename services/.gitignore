@@ -19,8 +19,6 @@
 *.pub
 *.jks
 *.p12
-unseal_vault.ps1
-vault-unseal.ps1
 /kms/*.ps1
 .env
 auth.json
@@ -32,4 +30,3 @@ auth.json
 Thumbs.db
 Homestead.json
 Homestead.yaml
-note.txt

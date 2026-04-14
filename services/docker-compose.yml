@@ -13,8 +13,8 @@ services:
     volumes:
       - payshield_vault_data:/vault/file
       - ./cert/ca.crt:/vault/certs/ca.crt:ro
-      - ./cert/vault.crt:/vault/certs/vault.crt:ro
       - ./key/vault.key:/vault/certs/vault.key:ro
+      - ./cert/vault.crt:/vault/certs/vault.crt:ro
 
 
   db:
@@ -24,14 +24,14 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     command:
-      - --ssl-ca=/etc/mysql/certs/ca.crt
-      - --ssl-cert=/etc/mysql/certs/server.crt
-      - --ssl-key=/etc/mysql/certs/server.key
       - --require_secure_transport=ON
+      - --ssl-ca=/etc/mysql/certs/ca.crt
+      - --ssl-key=/etc/mysql/certs/server.key
+      - --ssl-cert=/etc/mysql/certs/server.crt
     volumes:
       - ./cert/ca.crt:/etc/mysql/certs/ca.crt:ro
-      - ./cert/db_server.crt:/etc/mysql/certs/server.crt:ro
       - ./key/db_server.key:/etc/mysql/certs/server.key:ro
+      - ./cert/db_server.crt:/etc/mysql/certs/server.crt:ro
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 
@@ -43,14 +43,14 @@ services:
     environment:
       - KC_PROXY=edge
       - KC_HOSTNAME_STRICT=false
-      - KC_HTTPS_CLIENT_AUTH=request
-      - KC_HTTPS_TRUST_STORE_FILE=/opt/keycloak/conf/truststore.jks
-      - KC_HTTPS_TRUST_STORE_PASSWORD=password
-      - KC_TRUSTSTORE_PATHS=/opt/keycloak/conf/truststore.jks
       - KC_TRUSTSTORE_PASSWORD=password
+      - KC_TRUSTSTORE_PATHS=/opt/keycloak/conf/truststore.jks
       - KEYCLOAK_ADMIN=${KC_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
       - KC_DB_PASSWORD=${DB_PASSWORD}
+      - KC_HTTPS_CLIENT_AUTH=request
+      - KC_HTTPS_TRUST_STORE_PASSWORD=password
+      - KC_HTTPS_TRUST_STORE_FILE=/opt/keycloak/conf/truststore.jks
       - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.crt
       - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
     volumes:
@@ -134,7 +134,6 @@ services:
     volumes:
       - ../gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro
       - ../pdp:/usr/local/share/lua/5.1/kong/plugins/opa:ro
-      # [QUAN TRỌNG] Mount bộ thẻ Bootstrap để nói chuyện với Vault qua mTLS
       - ./cert/ca.crt:/tmp/bootstrap/ca.crt:ro
       - ./cert/client.crt:/tmp/bootstrap/client.crt:ro
       - ./key/client.key:/tmp/bootstrap/client.key:ro
@@ -142,7 +141,6 @@ services:
       sh -c "
       which jq >/dev/null || (apt-get update && apt-get install -y curl jq gawk);
       mkdir -p /tmp/certs;
-      echo 'Giao tiếp mTLS với Vault để lấy chứng chỉ...';
 
       curl -s --cacert /tmp/bootstrap/ca.crt --cert /tmp/bootstrap/client.crt --key /tmp/bootstrap/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/mtls > /tmp/mtls.json;
 
@@ -162,7 +160,6 @@ services:
       sed -i \"/__KONG_KEY_CONTENT__/r /tmp/certs/kong_indented.key\" /tmp/kong_run.yml;
       sed -i \"/__KONG_KEY_CONTENT__/d\" /tmp/kong_run.yml;
 
-      echo 'Kong đã nhận chứng chỉ từ Vault. Đang khởi động...';
       /docker-entrypoint.sh kong docker-start"
 
 
@@ -194,20 +191,15 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=true
-
-      # HTTP
       - xpack.security.http.ssl.enabled=true
       - xpack.security.http.ssl.key=certs/elk.key
       - xpack.security.http.ssl.certificate=certs/elk.crt
       - xpack.security.http.ssl.certificate_authorities=certs/ca.crt
       - xpack.security.http.ssl.client_authentication=optional
-
-      # TCP
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=certs/elk.key
       - xpack.security.transport.ssl.certificate=certs/elk.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca.crt
-
       - VAULT_TOKEN=${VAULT_APP_TOKEN}
     volumes:
       - payshield_siem_data:/usr/share/elasticsearch/data
@@ -263,10 +255,13 @@ services:
       - ./key/client.key:/usr/share/kibana/config/certs/client.key:ro
       - ./cert/elk.crt:/usr/share/kibana/config/certs/elk.crt:ro
       - ./key/elk.key:/usr/share/kibana/config/certs/elk.key:ro
-    command: >
+    command: |
       sh -c "
-      export ELASTICSEARCH_PASSWORD=$$(curl -s --cacert /usr/share/kibana/config/certs/ca.crt --cert /usr/share/kibana/config/certs/client.crt --key /usr/share/kibana/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
-      /usr/local/bin/kibana-docker --allow-root"
+      export ELK_PASS=$$(curl -s --cacert /usr/share/kibana/config/certs/ca.crt --cert /usr/share/kibana/config/certs/client.crt --key /usr/share/kibana/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      export ELASTICSEARCH_PASSWORD=$$ELK_PASS;
+      until curl -s -k -u \"elastic:$$ELK_PASS\" https://elasticsearch:9200 | grep -q \"cluster_uuid\"; do sleep 3; done;
+      curl -s -k -u \"elastic:$$ELK_PASS\" -X POST \"https://elasticsearch:9200/_security/user/kibana_system/_password\" -H \"Content-Type: application/json\" -d \"{\\\"password\\\":\\\"$$ELK_PASS\\\"}\";
+      /usr/local/bin/kibana-docker"
 
 
   filebeat:
