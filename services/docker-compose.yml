@@ -32,7 +32,7 @@ services:
       - ./cert/ca.crt:/etc/mysql/certs/ca.crt:ro
       - ./key/db_server.key:/etc/mysql/certs/server.key:ro
       - ./cert/db_server.crt:/etc/mysql/certs/server.crt:ro
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/database-init.sql:/docker-entrypoint-initdb.d/init.sql
 
 
   keycloak:
@@ -97,7 +97,7 @@ services:
       - ./cert/ca.crt:/etc/ssl/certs/ca.crt:ro
       - ./cert/laravel.crt:/etc/ssl/certs/laravel.crt:ro
       - ./key/laravel.key:/etc/ssl/private/laravel.key:ro
-      - ./scripts/laravel-ssl.conf:/etc/apache2/sites-available/000-default.conf:ro
+      - ./scripts/laravel_ext.conf:/etc/apache2/sites-available/000-default.conf:ro
       - ./cert/db_client.crt:/var/www/html/cert/db_client.crt:ro
       - ./key/db_client.key:/var/www/html/key/db_client.key:ro
       - ./cert/ca.crt:/var/www/html/cert/ca.crt:ro
