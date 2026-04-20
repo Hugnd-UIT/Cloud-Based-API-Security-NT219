@@ -3,7 +3,7 @@ info:
   title: Payshield API
   version: 1.0.0
 servers:
-  - url: http://localhost:8888/api
+  - url: https://localhost:8888/api
 paths:
   /dashboard/manager-data:
     get:
@@ -18,40 +18,31 @@ paths:
       parameters:
         - name: pentest
           in: query
-          description: SQL Injection
+          description: Tham số chứa payload để test WAF
           schema:
             type: string
-            example: "1' UNION SELECT username, password FROM users--"
-        - name: pentest
-          in: query
-          description: Cross-Site Scripting
-          schema:
-            type: string
-            example: "<script>alert('Hacked!')</script>"
-        - name: pentest
-          in: query
-          description: Local File Inclusion
-          schema:
-            type: string
-            example: "C:\\Windows\\System32\\cmd.exe"
-        - name: pentest
-          in: query
-          description: Command Injection
-          schema:
-            type: string
-            example: "127.0.0.1;cat /etc/passwd"
-        - name: pentest
-          in: query
-          description: Log Injection
-          schema:
-            type: string
-            example: "admin%0d%0a[INFO] User logged in successfully"
+          examples:
+            sqli:
+              summary: SQL Injection
+              value: "1' UNION SELECT username, password FROM users--"
+            xss:
+              summary: Cross-Site Scripting
+              value: "<script>alert('Hacked!')</script>"
+            lfi:
+              summary: Local File Inclusion
+              value: "C:\\Windows\\System32\\cmd.exe"
+            cmd_inject:
+              summary: Command Injection
+              value: "127.0.0.1;cat /etc/passwd"
+            log_inject:
+              summary: Log Injection
+              value: "admin%0d%0a[INFO] User logged in successfully"
       responses:
         "200":
           description: OK
         "403":
           description: Block by WAF
-          
+            
   /employees/{employeeId}:
     parameters:
       - name: employeeId
