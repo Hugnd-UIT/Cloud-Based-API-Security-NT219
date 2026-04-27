@@ -12,10 +12,26 @@ services:
     command: server
     volumes:
       - payshield_vault_data:/vault/file
-      - ./cert/ca.crt:/vault/certs/ca.crt:ro
-      - ./key/vault.key:/vault/certs/vault.key:ro
-      - ./cert/vault.crt:/vault/certs/vault.crt:ro
+      - ../kms/ca.crt:/vault/certs/ca.crt:ro
+      - ../kms/ca.key:/vault/certs/ca.key:ro
+      - ../kms/vault.crt:/vault/certs/vault.crt:ro
+      - ../kms/vault.key:/vault/certs/vault.key:ro
 
+  vault-agent-controller:
+    image: hashicorp/vault:1.13.3
+    container_name: payshield_vault_agent
+    volumes:
+      - ../kms/vault-agent:/kms/vault-agent:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
+      - ../kms/vault.crt:/kms/vault.crt:ro
+      - ../kms/vault.key:/kms/vault.key:ro
+      - payshield_certs_tmpfs:/tmpfs/certs
+    command: agent -config=/kms/vault-agent/agent.hcl
+    healthcheck:
+      test: ["CMD", "stat", "/tmpfs/certs/server.crt"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
 
   db:
     image: mysql:8.0
@@ -23,70 +39,73 @@ services:
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     command:
       - --require_secure_transport=ON
-      - --ssl-ca=/etc/mysql/certs/ca.crt
-      - --ssl-key=/etc/mysql/certs/server.key
-      - --ssl-cert=/etc/mysql/certs/server.crt
+      - --ssl-ca=/kms/ca.crt
+      - --ssl-key=/tmpfs/certs/server.key
+      - --ssl-cert=/tmpfs/certs/server.crt
     volumes:
-      - ./cert/ca.crt:/etc/mysql/certs/ca.crt:ro
-      - ./key/db_server.key:/etc/mysql/certs/server.key:ro
-      - ./cert/db_server.crt:/etc/mysql/certs/server.crt:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
       - ./scripts/database-init.sql:/docker-entrypoint-initdb.d/init.sql
-
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.0
     container_name: payshield_keycloak
     ports:
       - "8444:8443"
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
       - KC_PROXY=edge
       - KC_HOSTNAME_STRICT=false
-      - KC_TRUSTSTORE_PASSWORD=password
-      - KC_TRUSTSTORE_PATHS=/opt/keycloak/conf/truststore.jks
       - KEYCLOAK_ADMIN=${KC_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
       - KC_DB_PASSWORD=${DB_PASSWORD}
       - KC_HTTPS_CLIENT_AUTH=request
-      - KC_HTTPS_TRUST_STORE_PASSWORD=password
-      - KC_HTTPS_TRUST_STORE_FILE=/opt/keycloak/conf/truststore.jks
-      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.crt
-      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
+      - KC_TRUSTSTORE_PATHS=/kms/ca.crt
+      - KC_HTTPS_CERTIFICATE_FILE=/tmpfs/certs/server.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/tmpfs/certs/server.key
     volumes:
-      - ./cert/truststore.jks:/opt/keycloak/conf/truststore.jks:ro
-      - ./cert/keycloak.crt:/opt/keycloak/conf/server.crt:ro
-      - ./key/keycloak.key:/opt/keycloak/conf/server.key:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
     command: start-dev
-
 
   opa:
     image: openpolicyagent/opa:latest-static
     container_name: payshield_opa
     ports:
       - "8181:8181"
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     volumes:
       - ../pdp/policy.rego:/fortress/policy.rego:ro
-      - ./cert/opa.crt:/cert/opa.crt:ro
-      - ./key/opa.key:/cert/opa.key:ro
-      - ./cert/ca.crt:/cert/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
     command:
       - run
       - --server
       - --addr=:8181
-      - --tls-cert-file=/cert/opa.crt
-      - --tls-private-key-file=/cert/opa.key
-      - --tls-ca-cert-file=/cert/ca.crt
+      - --tls-cert-file=/tmpfs/certs/server.crt
+      - --tls-private-key-file=/tmpfs/certs/server.key
+      - --tls-ca-cert-file=/kms/ca.crt
       - --watch
       - /fortress/policy.rego
-
 
   app:
     build: .
     container_name: payshield_app
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
       DB_CONNECTION: mysql
-      DB_HOST: db
+      DB_HOST: payshield_db
       DB_PORT: 3306
       DB_DATABASE: "${DB_DATABASE}"
       DB_USERNAME: root
@@ -94,84 +113,67 @@ services:
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
     volumes:
       - .:/var/www/html
-      - ./cert/ca.crt:/etc/ssl/certs/ca.crt:ro
-      - ./cert/laravel.crt:/etc/ssl/certs/laravel.crt:ro
-      - ./key/laravel.key:/etc/ssl/private/laravel.key:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
       - ./scripts/laravel_ext.conf:/etc/apache2/sites-available/000-default.conf:ro
-      - ./cert/db_client.crt:/var/www/html/cert/db_client.crt:ro
-      - ./key/db_client.key:/var/www/html/key/db_client.key:ro
-      - ./cert/ca.crt:/var/www/html/cert/ca.crt:ro
     command: >
       sh -c "a2enmod ssl && php artisan config:clear && apache2-foreground"
-
 
   webserver:
     image: nginx:latest
     container_name: payshield_webserver
     ports:
       - "8443:8443"
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     volumes:
       - ../webserver/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./cert/server.crt:/etc/nginx/certs/server.crt:ro
-      - ./key/server.key:/etc/nginx/certs/server.key:ro
-      - ./cert/ca.crt:/etc/nginx/certs/ca.crt:ro
-
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
 
   kong:
     image: kong:3.4-ubuntu
     container_name: payshield_kong
     user: root
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
       KONG_DATABASE: off
       KONG_DECLARATIVE_CONFIG: /tmp/kong_run.yml
       KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
-      KONG_SSL_CERT: /tmp/certs/kong.crt
-      KONG_SSL_CERT_KEY: /tmp/certs/kong.key
+      KONG_SSL_CERT: /tmpfs/certs/server.crt
+      KONG_SSL_CERT_KEY: /tmpfs/certs/server.key
       KONG_NGINX_PROXY_SSL_VERIFY_CLIENT: on
-      KONG_NGINX_PROXY_SSL_CLIENT_CERTIFICATE: /tmp/certs/ca.crt
+      KONG_NGINX_PROXY_SSL_CLIENT_CERTIFICATE: /kms/ca.crt
       KONG_CLIENT_SSL: on
-      KONG_CLIENT_SSL_CERT: /tmp/certs/kong.crt
-      KONG_CLIENT_SSL_CERT_KEY: /tmp/certs/kong.key
-      KONG_LUA_SSL_TRUSTED_CERTIFICATE: /tmp/certs/ca.crt
+      KONG_CLIENT_SSL_CERT: /tmpfs/certs/server.crt
+      KONG_CLIENT_SSL_CERT_KEY: /tmpfs/certs/server.key
+      KONG_LUA_SSL_TRUSTED_CERTIFICATE: /kms/ca.crt
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
       KONG_PLUGINS: bundled,opa
     volumes:
       - ../gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro
       - ../pdp:/usr/local/share/lua/5.1/kong/plugins/opa:ro
-      - ./cert/ca.crt:/tmp/bootstrap/ca.crt:ro
-      - ./cert/client.crt:/tmp/bootstrap/client.crt:ro
-      - ./key/client.key:/tmp/bootstrap/client.key:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
     command: >
       sh -c "
       which jq >/dev/null || (apt-get update && apt-get install -y curl jq gawk);
-      mkdir -p /tmp/certs;
-
-      curl -s --cacert /tmp/bootstrap/ca.crt --cert /tmp/bootstrap/client.crt --key /tmp/bootstrap/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/mtls > /tmp/mtls.json;
-
-      jq -r '.data.data.kong_cert' /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /tmp/certs/kong.crt;
-      jq -r '.data.data.kong_key'  /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /tmp/certs/kong.key;
-      jq -r '.data.data.ca_cert'   /tmp/mtls.json | awk '{gsub(/\\\\n/,\"\n\")}1' > /tmp/certs/ca.crt;
-
-      sed 's/^/      /' /tmp/certs/kong.crt > /tmp/certs/kong_indented.crt;
-      sed 's/^/      /' /tmp/certs/kong.key > /tmp/certs/kong_indented.key;
-
-      CLIENT_SECRET=$$(curl -s --cacert /tmp/bootstrap/ca.crt --cert /tmp/bootstrap/client.crt --key /tmp/bootstrap/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | jq -r '.data.data.CLIENT_SECRET');
-
+      CLIENT_SECRET=$$(curl -s --cacert /kms/ca.crt --cert /tmpfs/certs/server.crt --key /tmpfs/certs/server.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | jq -r '.data.data.CLIENT_SECRET');
       cp /usr/local/kong/declarative/kong.yml /tmp/kong_run.yml;
       sed -i \"s|__CLIENT_SECRET__|$$CLIENT_SECRET|g\" /tmp/kong_run.yml;
-      sed -i \"/__KONG_CERT_CONTENT__/r /tmp/certs/kong_indented.crt\" /tmp/kong_run.yml;
-      sed -i \"/__KONG_CERT_CONTENT__/d\" /tmp/kong_run.yml;
-      sed -i \"/__KONG_KEY_CONTENT__/r /tmp/certs/kong_indented.key\" /tmp/kong_run.yml;
-      sed -i \"/__KONG_KEY_CONTENT__/d\" /tmp/kong_run.yml;
-
       /docker-entrypoint.sh kong docker-start"
-
 
   waf:
     image: owasp/modsecurity-crs:nginx
     container_name: payshield_waf
     ports:
       - "8888:8443"
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
       MODSEC_RULE_ENGINE: "On"
       BACKEND: "https://payshield_kong:8443"
@@ -182,107 +184,108 @@ services:
       SSL_PORT: 8443
     volumes:
       - ../gateway/waf.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
-      - ./cert/waf.crt:/etc/nginx/certs/waf.crt:ro
-      - ./key/waf.key:/etc/nginx/certs/waf.key:ro
-      - ./cert/ca.crt:/etc/nginx/certs/ca.crt:ro
-
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
     container_name: payshield_elasticsearch
     ports: 
       - "9200:9200"
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=certs/elk.key
-      - xpack.security.http.ssl.certificate=certs/elk.crt
-      - xpack.security.http.ssl.certificate_authorities=certs/ca.crt
-      - xpack.security.http.ssl.client_authentication=optional
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=certs/elk.key
-      - xpack.security.transport.ssl.certificate=certs/elk.crt
-      - xpack.security.transport.ssl.certificate_authorities=certs/ca.crt
-      - VAULT_TOKEN=${VAULT_APP_TOKEN}
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=true"
+      - "xpack.security.http.ssl.enabled=true"
+      - "xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/server.key"
+      - "xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/server.crt"
+      - "xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/ca.crt"
+      - "xpack.security.http.ssl.client_authentication=optional"
+      - "xpack.security.transport.ssl.enabled=true"
+      - "xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/server.key"
+      - "xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/server.crt"
+      - "xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/ca.crt"
+      - "VAULT_TOKEN=${VAULT_APP_TOKEN}"
     volumes:
       - payshield_siem_data:/usr/share/elasticsearch/data
-      - ./cert/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt:ro
-      - ./cert/client.crt:/usr/share/elasticsearch/config/certs/client.crt:ro
-      - ./key/client.key:/usr/share/elasticsearch/config/certs/client.key:ro
-      - ./cert/elk.crt:/usr/share/elasticsearch/config/certs/elk.crt:ro
-      - ./key/elk.key:/usr/share/elasticsearch/config/certs/elk.key:ro
+      - ../kms/ca.crt:/usr/share/elasticsearch/config/ca.crt:ro
+      - payshield_certs_tmpfs:/usr/share/elasticsearch/config/certs:ro
     command: >
       sh -c "
-      export ELASTIC_PASSWORD=$$(curl -s --cacert /usr/share/elasticsearch/config/certs/ca.crt --cert /usr/share/elasticsearch/config/certs/client.crt --key /usr/share/elasticsearch/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      export ELASTIC_PASSWORD=$$(curl -s --cacert /usr/share/elasticsearch/config/ca.crt --cert /usr/share/elasticsearch/config/certs/server.crt --key /usr/share/elasticsearch/config/certs/server.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
       exec /usr/local/bin/docker-entrypoint.sh eswrapper"
-
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.13.0
     container_name: payshield_logstash
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
       - VAULT_TOKEN=${VAULT_APP_TOKEN}
     volumes:
       - ../siem/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
-      - ./cert/ca.crt:/usr/share/logstash/config/certs/ca.crt:ro
-      - ./cert/client.crt:/usr/share/logstash/config/certs/client.crt:ro
-      - ./key/client.key:/usr/share/logstash/config/certs/client.key:ro
-      - ./cert/elk.crt:/usr/share/logstash/config/certs/elk.crt:ro
-      - ./key/elk.key:/usr/share/logstash/config/certs/elk.key:ro
+      - ../kms/ca.crt:/etc/ssl/certs/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
     command: >
       sh -c "
-      export ELK_PASSWORD=$$(curl -s --cacert /usr/share/logstash/config/certs/ca.crt --cert /usr/share/logstash/config/certs/client.crt --key /usr/share/logstash/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      export ELK_PASSWORD=$$(curl -s --cacert /kms/ca.crt --cert /tmpfs/certs/server.crt --key /tmpfs/certs/server.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
       /usr/local/bin/docker-entrypoint"
-
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.0
     container_name: payshield_kibana
     ports:
       - "5601:5601"
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     environment:
       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
       - VAULT_TOKEN=${VAULT_APP_TOKEN}
       - ELASTICSEARCH_USERNAME=kibana_system 
       - SERVER_SSL_ENABLED=true
-      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/elk.crt
-      - SERVER_SSL_KEY=/usr/share/kibana/config/certs/elk.key
+      - SERVER_SSL_CERTIFICATE=/tmpfs/certs/server.crt
+      - SERVER_SSL_KEY=/tmpfs/certs/server.key
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
-      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca.crt
-      - ELASTICSEARCH_SSL_CERTIFICATE=/usr/share/kibana/config/certs/elk.crt
-      - ELASTICSEARCH_SSL_KEY=/usr/share/kibana/config/certs/elk.key
-      - NODE_EXTRA_CA_CERTS=/usr/share/kibana/config/certs/ca.crt
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/kms/ca.crt
+      - ELASTICSEARCH_SSL_CERTIFICATE=/tmpfs/certs/server.crt
+      - ELASTICSEARCH_SSL_KEY=/tmpfs/certs/server.key
+      - NODE_EXTRA_CA_CERTS=/kms/ca.crt
     volumes:
-      - ./cert/ca.crt:/usr/share/kibana/config/certs/ca.crt:ro
-      - ./cert/client.crt:/usr/share/kibana/config/certs/client.crt:ro
-      - ./key/client.key:/usr/share/kibana/config/certs/client.key:ro
-      - ./cert/elk.crt:/usr/share/kibana/config/certs/elk.crt:ro
-      - ./key/elk.key:/usr/share/kibana/config/certs/elk.key:ro
+      - ../kms/ca.crt:/kms/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
     command: |
       sh -c "
-      export ELK_PASS=$$(curl -s --cacert /usr/share/kibana/config/certs/ca.crt --cert /usr/share/kibana/config/certs/client.crt --key /usr/share/kibana/config/certs/client.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
+      export ELK_PASS=$$(curl -s --cacert /kms/ca.crt --cert /tmpfs/certs/server.crt --key /tmpfs/certs/server.key -H \"X-Vault-Token: $$VAULT_TOKEN\" https://payshield_vault:8200/v1/secret/data/payshield | grep -Eo '\"ELK_PASSWORD\"[[:space:]]*:[[:space:]]*\"[^\"]*\"' | cut -d'\"' -f4);
       export ELASTICSEARCH_PASSWORD=$$ELK_PASS;
       until curl -s -k -u \"elastic:$$ELK_PASS\" https://elasticsearch:9200 | grep -q \"cluster_uuid\"; do sleep 3; done;
       curl -s -k -u \"elastic:$$ELK_PASS\" -X POST \"https://elasticsearch:9200/_security/user/kibana_system/_password\" -H \"Content-Type: application/json\" -d \"{\\\"password\\\":\\\"$$ELK_PASS\\\"}\";
       /usr/local/bin/kibana-docker"
 
-
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.13.0
     container_name: payshield_filebeat
     user: root
+    depends_on:
+      vault-agent-controller:
+        condition: service_healthy
     volumes:
       - ../siem/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./cert/ca.crt:/etc/certs/ca.crt:ro
-      - ./cert/client.crt:/etc/certs/client.crt:ro
-      - ./key/client.key:/etc/keys/client.key:ro
+      - ../kms/ca.crt:/etc/certs/ca.crt:ro
+      - payshield_certs_tmpfs:/tmpfs/certs:ro
     command: filebeat -e -strict.perms=false
-
 
 volumes:
   payshield_mysql_data:
   payshield_vault_data:
   payshield_siem_data:
+  payshield_certs_tmpfs:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

@@ -5,10 +5,20 @@ import future.keywords.if
 
 default allow = false
 
+jwks_request := http.send({
+    "url": "https://payshield_keycloak:8443/realms/payshield-realm/protocol/openid-connect/certs",
+    "method": "GET",
+    "tls_ca_cert_file": "/kms/ca.crt"
+})
+
 token_payload := payload if {
     auth_header := input.request.http.headers.authorization
     token := trim_space(replace(auth_header, "Bearer ", ""))
-    [_, payload, _] := io.jwt.decode(token)
+    
+    verify_result := io.jwt.decode_verify(token, {"cert": jwks_request.raw_body})
+    verify_result[0] == true
+    
+    payload := verify_result[2]
 }
 
 mtls_fingerprint := actual_hex if {
