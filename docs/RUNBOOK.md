@@ -28,6 +28,7 @@ docker-compose up -d vault
 docker-compose up -d db
 docker exec -it payshield_app php artisan config:clear                                                    
 docker exec -it payshield_app php artisan cache:clear
+docker exec -it payshield_app php artisan migrate
 ```
 
 ### Bước 2.3: Kích hoạt HashiCorp Vault
@@ -204,3 +205,11 @@ docker-compose up -d
 docker-compose down
 ```
 *Lưu ý: Không dùng cờ `-v` trừ khi muốn xóa sạch toàn bộ dữ liệu Database và Vault để làm lại từ đầu*
+
+# 1. Chạy lệnh xuất file vào trong container
+docker exec -it payshield_keycloak /opt/keycloak/bin/kc.sh export --file /tmp/keycloak-export.json --realm payshield-realm --users realm_file
+
+# 2. Copy file đó từ Container ra máy thật của ông để cất
+docker cp payshield_keycloak:/tmp/keycloak-export.json ../idp/keycloak-export.json
+
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' payshield_keycloak

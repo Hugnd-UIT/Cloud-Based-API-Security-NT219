@@ -1,7 +1,7 @@
-path "secret/data/payshield" {
-  capabilities = ["read"]
+path "pki/issue/payshield-role" {
+  capabilities = ["update"]
 }
 
-path "secret/data/mtls" {
-  capabilities = ["read"]
+path "pki/certs" {
+  capabilities = ["list", "read"]
 }

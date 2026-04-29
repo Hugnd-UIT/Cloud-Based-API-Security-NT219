@@ -1,5 +1,5 @@
 vault {
-  address = "https://payshield_vault:8200"
+  address = "https://vault:8200"
   ca_cert = "/kms/ca.crt"
   client_cert = "/kms/vault.crt"
   client_key = "/kms/vault.key"
@@ -8,8 +8,8 @@ vault {
 auto_auth {
   method "approle" {
     config = {
-      role_id_file_path = "/kms/vault-agent/roleid"
-      secret_id_file_path = "/kms/vault-agent/secretid"
+      role_id_file_path   = "/tmp/roleid"
+      secret_id_file_path = "/tmp/secretid"
       remove_secret_id_file_after_reading = false
     }
   }

@@ -8,5 +8,5 @@ output.logstash:
   hosts: ["logstash:5044"]
   ssl.certificate_authorities: ["/etc/certs/ca.crt"]
   ssl.certificate: "/tmpfs/certs/server.crt"
-  ssl.key: "/tmpfs/certs/server.key"
   ssl.verification_mode: "certificate"
+  ssl.key: "/tmpfs/certs/server.key"
