@@ -39,7 +39,7 @@ services:
 
           - name: opa
             config:
-              opa_server: "https://opa:8181"
+              opa_server: "https://payshield_opa:8181"
               opa_path: "/v1/data/payshield/authz"
 
       - name: vnpay-ipn-route

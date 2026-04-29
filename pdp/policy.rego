@@ -8,7 +8,7 @@ default allow = false
 jwks_request := http.send({
     "url": "https://payshield_keycloak:8443/realms/payshield-realm/protocol/openid-connect/certs",
     "method": "GET",
-    "tls_ca_cert_file": "/kms/ca.crt"
+    "tls_ca_cert_file": "/certs/ca.crt"
 })
 
 token_payload := payload if {
