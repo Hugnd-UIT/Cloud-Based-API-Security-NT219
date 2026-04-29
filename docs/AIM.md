@@ -1,1 +1,0 @@
-AIM là mục tiêu bảo vệ hay là tài sản

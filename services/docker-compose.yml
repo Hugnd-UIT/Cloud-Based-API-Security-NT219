@@ -345,6 +345,13 @@ services:
       - payshield_certs_tmpfs:/tmpfs/certs:ro
 
 
+  redis:
+      image: redis:7.0-alpine
+      container_name: payshield_redis
+      ports:
+        - "6300:6379"
+
+
 volumes:
   payshield_mysql_data:
   payshield_vault_data:
