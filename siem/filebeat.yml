@@ -7,6 +7,6 @@ processors:
 output.logstash:
   hosts: ["logstash:5044"]
   ssl.certificate_authorities: ["/etc/certs/ca.crt"]
-  ssl.certificate: "/etc/certs/client.crt"
-  ssl.key: "/etc/keys/client.key"
+  ssl.certificate: "/tmpfs/certs/server.crt"
   ssl.verification_mode: "certificate"
+  ssl.key: "/tmpfs/certs/server.key"

@@ -1,17 +1,9 @@
 _format_version: "3.0"
 _transform: true
 
-certificates:
-  - id: "44444444-4444-4444-4444-444444444444"
-    cert: |
-      __KONG_CERT_CONTENT__
-    key: |
-      __KONG_KEY_CONTENT__
-
 services:
-  - name: laravel-api-service
+  - name: services
     url: "https://webserver:8443"
-    client_certificate: "44444444-4444-4444-4444-444444444444"
 
     routes:
       - name: laravel-api-route
@@ -24,31 +16,6 @@ services:
             config:
               minute: 10
               policy: local
-
-          - name: cors
-            config:
-              origins:
-                - "http://localhost:6868"
-              methods:
-                - GET
-                - POST
-                - PUT
-                - PATCH
-                - DELETE
-              headers:
-                - Accept
-                - Accept-Version
-                - Content-Length
-                - Content-MD5
-                - Content-Type
-                - Date
-                - Authorization
-              credentials: true
-
-          - name: jwt
-            config:
-              claims_to_verify:
-                - exp
 
           - name: opa
             config:
@@ -80,20 +47,3 @@ services:
             config:
               minute: 20
               policy: local
-
-consumers:
-  - username: payshield-users
-    jwt_secrets:
-      - algorithm: RS256
-        key: "https://localhost:8444/realms/payshield-realm"
-        secret: "{vault://env/secret/payshield?key=CLIENT_SECRET}"
-        rsa_public_key: |
-          -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslsryKUoMOVnpdDm9ImW
-          ZXAKEMuGYg7kRxDn1WFWUN0VKLNxF7XmJUE+bYicRVm+SW1M2SFwa8yvNhfq4KFp
-          l3s+2+uV1XlH6iAEuToBXruYua1B0eA4M9UWBvakJJXmRz2ekZxYYnUVylMJVxe5
-          vSviZii7sEdUM5DBTz0NwYiHr7LJsz+BobO+pHLQbwvvsNteYVBCrnXN/gMD8UjR
-          uaI4yQQT3amoHJ0b6R/hpf7MNlvceZG0XMedefNkNfHqrDcg5URbeAzYwiagcl6c
-          zKmSpmR+h8VX6X+EtTBYcM4lgvY8xb08ii+iBjVY71eH/rGXdr/2G/v+rPnQnbt+
-          ZQIDAQAB
-          -----END PUBLIC KEY-----

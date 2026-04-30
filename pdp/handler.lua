@@ -30,7 +30,9 @@ function OpaHandler:access(conf)
   local res, err = httpc:request_uri(conf.opa_server .. conf.opa_path, {
     method = "POST",
     body = cjson.encode(payload),
-    headers = { ["Content-Type"] = "application/json" }
+    headers = { ["Content-Type"] = "application/json" },
+    ssl_server_name = "payshield.local",
+    ssl_verify = true
   })
 
   if not res then return kong.response.exit(500, { message = "OPA Unavailable", reason = err }) end
