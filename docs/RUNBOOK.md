@@ -10,28 +10,18 @@ Tài liệu này cung cấp hướng dẫn từng bước để khởi tạo, v�
 ## 2. Hướng dẫn khởi tạo
 Hệ thống bao gồm nhiều dịch vụ phụ thuộc lẫn nhau nên phải khởi động theo đúng thứ tự sau:
 
-### Bước 2.1: Khởi động HashiCorp Vault
+### Bước 2.1: Khởi động hệ thống
 
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
 
 ```bash
-docker-compose up -d vault
+docker-compose up -d
 ```
 
-### Bước 2.2: Khởi động Database MySQL
+*Lưu ý: Sau khi chạy lệnh thì vault agent sẽ đợi vault có dữ liệu và mở khóa*
 
-1: Chạy terminal tại thư mục services
-2: Chạy lệnh sau:
-
-```bash
-docker-compose up -d db
-docker exec -it payshield_app php artisan config:clear                                                    
-docker exec -it payshield_app php artisan cache:clear
-docker exec -it payshield_app php artisan migrate
-```
-
-### Bước 2.3: Kích hoạt HashiCorp Vault
+### Bước 2.2: Kích hoạt HashiCorp Vault
 
 Do Vault bị niêm phong, bắt buộc phải mở khóa.
 
@@ -41,7 +31,14 @@ Do Vault bị niêm phong, bắt buộc phải mở khóa.
 2: Chạy lệnh sau:
 
 ```bash
-docker exec -it -e VAULT_ADDR="https://127.0.0.1:8200" -e VAULT_CACERT="/vault/certs/ca.crt" -e VAULT_CLIENT_CERT="/vault/certs/vault.crt" -e VAULT_CLIENT_KEY="/vault/certs/vault.key" -e VAULT_SKIP_VERIFY="true" payshield_vault vault operator init
+docker exec -it `
+  -e VAULT_ADDR="https://127.0.0.1:8200" `
+  -e VAULT_CACERT="/vault/certs/ca.crt" `
+  -e VAULT_CLIENT_CERT="/vault/certs/vault.crt" `
+  -e VAULT_CLIENT_KEY="/vault/certs/vault.key" `
+  -e VAULT_SKIP_VERIFY="true" `
+  payshield_vault `
+  vault operator init
 ```
 *Lưu ý: Lưu ngay 5 Unseal Keys và Root Token vào nơi an toàn*
 
@@ -65,6 +62,80 @@ VAULT_KEY5="Nhập Unseal Key 5 vào đây"
 ./vault-unseal
 ```
 
+*Sau khi mở khóa vault phải thêm dữ liệu vào vault nếu chưa có*
+
+1: Chạy terminal tại thư mục services
+2: Truy cập môi trường shell của Vault:
+
+```bash
+docker exec -it payshield_vault sh
+```
+
+3: Cấp phát biến môi trường cho CLI:
+
+```bash
+export VAULT_SKIP_VERIFY=true
+export VAULT_CLIENT_CERT=/vault/certs/vault.crt
+export VAULT_CLIENT_KEY=/vault/certs/vault.key
+```
+
+4: Cấu hình PKI engine:
+
+```bash
+vault login "ROOT TOKEN"
+
+vault secrets enable pki
+vault secrets tune -max-lease-ttl=87600h pki
+
+vault write pki/config/ca \
+  pem_bundle="$(cat /vault/certs/ca.key /vault/certs/ca.crt)"
+
+vault write pki/roles/payshield-role \
+  allow_any_name=true \
+  allow_localhost=true \
+  allow_bare_domains=true \
+  allow_subdomains=true \
+  max_ttl="720h"
+```
+
+5: Cấu hình AppRole:
+
+```bash
+vault auth enable approle
+
+echo 'path "pki/issue/payshield-role" { capabilities = ["create", "update"] }' > /tmp/policy.hcl
+
+vault policy write payshield-agent-policy \
+  /tmp/policy.hcl
+
+vault write auth/approle/role/payshield-agent \
+  token_policies="payshield-agent-policy" \
+  token_ttl=1h \
+  token_max_ttl=4h
+
+vault read auth/approle/role/payshield-agent/role-id
+vault write -f auth/approle/role/payshield-agent/secret-id
+```
+
+*Lưu ý: sau khi có role id và secret id đưa vào env*
+
+```bash
+VAULT_ROLE_ID="Nhập role id ở đây"
+VAULT_SECRET_ID="Nhập secret id ở đây"
+```
+
+### Bước 2.3: Trích xuất dữ liệu Vault
+
+1: Chạy terminal tại thư mục kms
+2: Chạy lệnh sau:
+
+```bash
+docker cp payshield_app:/tmpfs/certs/server.crt ./server.crt
+docker cp payshield_app:/tmpfs/certs/server.key ./server.key
+```
+
+*Sau khi chạy xong sẽ xuất hiện server.crt và server.key ở thư mục kms, chứng chỉ và khóa này sẽ dùng cho client gọi API*
+
 ### Bước 2.4: Thêm chứng chỉ vào Chrome
 
 * **Tạo chứng chỉ định dạng PKCS cho Chrome**
@@ -73,84 +144,75 @@ VAULT_KEY5="Nhập Unseal Key 5 vào đây"
 2: Chạy lệnh sau:
 
 ```bash
-openssl pkcs12 -export -out client.p12 -inkey key/client.key -in cert/client.crt -certfile cert/ca.crt
+openssl pkcs12 -export -out client.p12 -inkey server.key -in server.crt -certfile ca.crt
 ```
 
 => Lệnh yêu cầu nhập mật khẩu hãy nhập "HugndUIT" hoặc khác tùy ý. Sau đó sẽ xuất hiện file client.p12.
 
 * **Nhập chứng chỉ định dạng PKCS cho Chrome**
-1: Truy cập chrome://certificate-manager/clientcerts"
+1: Truy cập "chrome://certificate-manager/clientcerts"
 2: Truy cập "Manage imported certificates from Windows"
 3: Chọn Import -> Next -> Browse -> Chọn file `client.p12`
 4: Nhập mật khẩu đã đặt ở bước trên -> Next -> Next -> Finish
 
-### Bước 2.5: Thêm dữ liệu vào HashiCorp Vault
-
-
-### Bước 2.6: Khởi động Keycloak
-
-1: Chạy terminal tại thư mục services
-2: Chạy lệnh sau:
-
-```bash
-docker-compose up -d keycloak
-```
-
-### Bước 2.7: Thêm dữ liệu vào Keycloak
+### Bước 2.5: Thêm dữ liệu vào Keycloak
 
 1: Truy cập "https://localhost:8444/admin/" và đăng nhập bằng username (admin), pass (admin)
 2: Chọn Create Realm -> Browse -> Chọn file keycloak-export.json trong thư mục idp
 3: Chọn Realm settings -> Key -> Lưu Public key của thuật toán RS256 cho bước tiếp theo
 *Lưu ý: Chọn đúng realm là payshield-realm* 
 
-### Bước 2.8: Thêm dữ liệu vào Kong
-
-1: Truy cập thư mục gateway chọn file kong.yml
-2: Nhập Public key của Keycloak vừa lầy được ở bước trên vào biến "rsa_public_key"
-
-### Bước 2.9: Khởi động các dịch vụ còn lại
-
-1: Chạy terminal tại thư mục services
-2: Chạy lệnh sau:
-
-```bash
-docker-compose up -d
-```
-
-### Bước 2.10: Khởi động Postman
+### Bước 2.6: Khởi động Postman
 
 1: Mở Postman và import collections bằng file "postman-collection.json" trong thư mục api
 2: Import enviroment bằng file "postman-environment" trong thư mục api
 3: Mở Settings -> App settings -> Certificates -> Tích chọn CA certificates -> Import file ca.cert trong thư mục cert vào PEM file
-4: Chọn Add Certificate -> Tạo cert cho 2 đường dẫn là localhost:8444 và localhost:8888, CRT file và KEY file chọn client.crt và client.key trong thư mục cert và key
+4: Chọn Add Certificate -> Tạo cert cho 2 đường dẫn là localhost:8444 và localhost:8888, CRT file và KEY file chọn server.crt và server.key trong thư mục kms
 *Lưu ý: Client ID là payshield-app và Client Secret là Client Secret của Keycloak hãy sửa lại*
 
 ---
 
 ## 3. Hướng dẫn vận hành
 
-**Gọi API**
-1: Mở Postman ở tab Authorization -> Get new access token -> Đăng nhập vào bằng tài khoản được cấp ở mục 4
+**Call API**
+1: Mở Postman ở tab Authorization -> Get new access token -> Đăng nhập vào bằng tài khoản sau 
+
+*Tài khoản manager*
+```bash
+username: manager-example@payshield.com
+password: example
+```
+
+*Tài khoản employee*
+```bash
+username: employee-example@payshield.com
+password: example
+```
+
 2: Chọn use token -> Chọn API muốn gọi đến và nhấn Send.
 
-**Gọi Webhook**
+**Call Webhook**
 1: Nhấn send API POST/VNPay 
 2: Nhận phản hồi 200OK và nhận được link payment_url
-3: Copy link vào trình duyệt -> Chọn "Thẻ nội địa và tài khoản ngân hàng" -> Chọn NCB -> Nhập tài khoản được cấp ở mục 4
+3: Copy link vào trình duyệt -> Chọn "Thẻ nội địa và tài khoản ngân hàng" -> Chọn NCB -> Nhập tài khoản sau:
+
+```bash
+Số thẻ: 9704198526191432198
+Tên chủ thẻ: NGUYEN VAN A
+Ngày phát hành: 07/15
+```
+
 4: Nhấn tiếp tục -> nhập OPT là: "123456" -> Trình duyệt trả về một URL -> Copy URL vào và dán vào API GET/VNPay
 5: Sửa vnpay-return thành vnpay-ipn và nhấn send nếu thấy Confirm success là thành công
 
-**Sử dụng ELK**
+**Use ELK**
 1: Truy cập https://localhost:5601
-2: Đăng nhập bằng tài khoản được cấp ở mục 4
+2: Đăng nhập bằng tài khoản username: elastic và pass: NguyenDuyHung
+*Mật khẩu ELK có thể khác kiểm tra ELK_PASSWORD trong env*
 
 ---
 
-## 4. Tài khoản và mật khẩu
-
----
-
-## 5. Một số lưu ý
+## 4. Một số lưu ý
 
 ### Tắt hệ thống an toàn
 
@@ -161,11 +223,27 @@ docker-compose down
 ```
 *Lưu ý: Không dùng cờ `-v` trừ khi muốn xóa sạch toàn bộ dữ liệu Database và Vault để làm lại từ đầu*
 
-### Export keycloak
+### Xuất cấu hình keycloak
 
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
 ```bash
-docker exec -it payshield_keycloak /opt/keycloak/bin/kc.sh export --file /tmp/keycloak-export.json --realm payshield-realm --users realm_file
-docker cp payshield_keycloak:/tmp/keycloak-export.json ../idp/keycloak-export.json
+docker exec -it payshield_keycloak `
+  /opt/keycloak/bin/kc.sh export `
+  --file /tmp/keycloak-export.json `
+  --realm payshield-realm `
+  --users realm_file
+
+docker cp payshield_keycloak:/tmp/keycloak-export.json `
+  ../idp/keycloak-export.json
+```
+
+### Khởi tạo dữ liệu database
+
+1: Chạy terminal tại thư mục services
+2: Chạy lệnh sau:
+```bash
+docker exec -it payshield_app php artisan config:clear
+docker exec -it payshield_app php artisan cache:clear
+docker exec -it payshield_app php artisan migrate
 ```
