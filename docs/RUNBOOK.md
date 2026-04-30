@@ -218,6 +218,7 @@ Ngày phát hành: 07/15
 
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
+
 ```bash
 docker-compose down
 ```
@@ -227,6 +228,7 @@ docker-compose down
 
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
+
 ```bash
 docker exec -it payshield_keycloak `
   /opt/keycloak/bin/kc.sh export `
@@ -242,8 +244,37 @@ docker cp payshield_keycloak:/tmp/keycloak-export.json `
 
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
+
 ```bash
 docker exec -it payshield_app php artisan config:clear
 docker exec -it payshield_app php artisan cache:clear
 docker exec -it payshield_app php artisan migrate
+```
+
+### Kiểm tra thuật toán mã hóa
+1: Chạy terminal tại thư mục services
+2: Chạy lệnh sau:
+
+```bash
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_kong | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8200 payshield_vault | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 3306 payshield_db | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8181 payshield_opa | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_webserver | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_waf | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 5601 payshield_kibana | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+
+docker exec -i payshield_kong openssl s_client -connect payshield_keycloak:8443 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
+
+docker exec -i payshield_kong openssl s_client -connect payshield_elasticsearch:9200 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
+
+docker exec -i payshield_kong openssl s_client -connect payshield_logstash:5044 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
+
+docker exec -i payshield_kong openssl s_client -connect payshield_app:443 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
 ```
