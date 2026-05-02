@@ -91,11 +91,9 @@ vault write pki/config/ca \
   pem_bundle="$(cat /vault/certs/ca.key /vault/certs/ca.crt)"
 
 vault write pki/roles/payshield-role \
-  allow_any_name=true \
-  allow_localhost=true \
-  allow_bare_domains=true \
-  allow_subdomains=true \
-  max_ttl="720h"
+    allow_any_name=true \
+    enforce_hostnames=false \
+    max_ttl="720h"
 ```
 
 5: Cấu hình AppRole:
@@ -130,8 +128,8 @@ VAULT_SECRET_ID="Nhập secret id ở đây"
 2: Chạy lệnh sau:
 
 ```bash
-docker cp payshield_app:/tmpfs/certs/server.crt ./server.crt
-docker cp payshield_app:/tmpfs/certs/server.key ./server.key
+docker cp payshield_vault_agent:/tmpfs/certs/client/server.crt ./client.crt
+docker cp payshield_vault_agent:/tmpfs/certs/client/server.key ./client.key
 ```
 
 *Sau khi chạy xong sẽ xuất hiện server.crt và server.key ở thư mục kms, chứng chỉ và khóa này sẽ dùng cho client gọi API*
@@ -277,4 +275,12 @@ docker exec -i payshield_kong openssl s_client -connect payshield_elasticsearch:
 docker exec -i payshield_kong openssl s_client -connect payshield_logstash:5044 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
 
 docker exec -i payshield_kong openssl s_client -connect payshield_app:443 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
+```
+
+### Tạo file truststore cho Keycloak
+
+1: Chạy terminal tại thư mục kms
+2: Chạy lệnh sau:
+```bash
+keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storetype PKCS12 -storepass password
 ```
