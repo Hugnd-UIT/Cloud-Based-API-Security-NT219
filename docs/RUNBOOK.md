@@ -281,6 +281,7 @@ docker exec -i payshield_kong openssl s_client -connect payshield_app:443 -cert 
 
 1: Chạy terminal tại thư mục kms
 2: Chạy lệnh sau:
+
 ```bash
 keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storetype PKCS12 -storepass password
 ```

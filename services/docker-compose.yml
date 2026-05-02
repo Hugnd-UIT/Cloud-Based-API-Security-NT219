@@ -277,7 +277,7 @@ services:
     volumes:
       - payshield_siem_data:/usr/share/elasticsearch/data
       - ../kms/ca.crt:/usr/share/elasticsearch/config/ca.crt:ro
-      - siem_certs:/tmpfs/certs:ro
+      - siem_certs:/usr/share/elasticsearch/config/certs:ro
 
 
   logstash:

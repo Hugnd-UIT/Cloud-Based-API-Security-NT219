@@ -189,7 +189,7 @@ EOF
 # ==========================================
 template {
   contents = <<EOF
-{{ with secret "pki/issue/payshield-role" "common_name=payshield_siem" "alt_names=elasticsearch,logstash,kibana,filebeat" "ttl=24h" }}
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_siem" "alt_names=elasticsearch,logstash,kibana,filebeat,localhost" "ttl=24h" }}
 {{ .Data.certificate }}
 {{ .Data.issuing_ca }}
 {{ end }}
@@ -198,7 +198,7 @@ EOF
 }
 template {
   contents = <<EOF
-{{ with secret "pki/issue/payshield-role" "common_name=payshield_siem" "alt_names=elasticsearch,logstash,kibana,filebeat" "ttl=24h" }}
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_siem" "alt_names=elasticsearch,logstash,kibana,filebeat,localhost" "ttl=24h" }}
 {{ .Data.private_key }}
 {{ end }}
 EOF
