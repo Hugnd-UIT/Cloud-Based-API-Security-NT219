@@ -31,7 +31,7 @@ function OpaHandler:access(conf)
     method = "POST",
     body = cjson.encode(payload),
     headers = { ["Content-Type"] = "application/json" },
-    ssl_server_name = "payshield.local",
+    ssl_server_name = "payshield_opa",
     ssl_verify = true
   })
 

@@ -1,5 +1,5 @@
 vault {
-  address = "https://vault:8200"
+  address = "https://payshield_vault:8200"
   ca_cert = "/kms/ca.crt"
   client_cert = "/kms/vault.crt"
   client_key = "/kms/vault.key"
@@ -15,12 +15,192 @@ auto_auth {
   }
 }
 
+# ==========================================
+# CLIENT
+# ==========================================
 template {
-  source      = "/kms/vault-agent/cert.tpl"
-  destination = "/tmpfs/certs/server.crt"
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_client" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/client/server.crt"
 }
 
 template {
-  source      = "/kms/vault-agent/key.tpl"
-  destination = "/tmpfs/certs/server.key"
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_client" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/client/server.key"
+}
+
+# ==========================================
+# KONG
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_kong" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/kong/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_kong" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/kong/server.key"
+}
+
+# ==========================================
+# WAF
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_waf" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/waf/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_waf" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/waf/server.key"
+}
+
+# ==========================================
+# NGINX
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_webserver" "alt_names=api.payshield.local,localhost" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/nginx/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_webserver" "alt_names=api.payshield.local,localhost" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/nginx/server.key"
+}
+
+# ==========================================
+# APP
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_app" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/app/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_app" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/app/server.key"
+}
+
+# ==========================================
+# DATABASE
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_db" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/db/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_db" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/db/server.key"
+}
+
+# ==========================================
+# Keycloak
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_keycloak" "alt_names=payshield_keycloak" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/keycloak/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_keycloak" "alt_names=payshield_keycloak" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/keycloak/server.key"
+}
+
+# ==========================================
+# OPA
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_opa" "alt_names=payshield_opa" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/opa/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_opa" "alt_names=payshield_opa" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/opa/server.key"
+}
+
+# ==========================================
+# SIEM
+# ==========================================
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_siem" "alt_names=elasticsearch,logstash,kibana,filebeat,localhost" "ttl=24h" }}
+{{ .Data.certificate }}
+{{ .Data.issuing_ca }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/siem/server.crt"
+}
+template {
+  contents = <<EOF
+{{ with secret "pki/issue/payshield-role" "common_name=payshield_siem" "alt_names=elasticsearch,logstash,kibana,filebeat,localhost" "ttl=24h" }}
+{{ .Data.private_key }}
+{{ end }}
+EOF
+  destination = "/tmpfs/certs/siem/server.key"
 }
