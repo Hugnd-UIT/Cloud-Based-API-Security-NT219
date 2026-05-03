@@ -167,9 +167,9 @@ services:
       - ./scripts/laravel-ext.conf:/etc/apache2/sites-available/000-default.conf:ro
 
 
-  webserver:
+  proxy:
     image: nginx:latest
-    container_name: payshield_webserver
+    container_name: payshield_proxy
 
     ports:
       - "8443:8443"
@@ -179,7 +179,7 @@ services:
         condition: service_healthy
 
     volumes:
-      - ../webserver/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ../kms/ca.crt:/kms/ca.crt:ro
       - nginx_certs:/tmpfs/certs:ro
 
