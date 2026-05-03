@@ -22,8 +22,8 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.crt -subj "
 
 openssl genrsa -out vault.key 2048
 openssl req -new -key vault.key -out vault.csr -subj "/CN=payshield_vault"
-Set-Content -Path v3.ext -Value "subjectAltName=IP:127.0.0.1,DNS:payshield_vault,DNS:localhost"
-openssl x509 -req -in vault.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out vault.crt -days 3650 -sha256 -extfile v3.ext
+Set-Content -Path tmp.ext -Value "subjectAltName=IP:127.0.0.1,DNS:payshield_vault,DNS:localhost"
+openssl x509 -req -in vault.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out vault.crt -days 3650 -sha256 -extfile tmp.ext
 
 Write-Host "Recreating Vault..." -ForegroundColor Cyan
 docker-compose -f $FILE up -d --force-recreate vault
@@ -75,6 +75,6 @@ openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -passout
 $TargetServices = (docker-compose -f $FILE config --services) | Where-Object { $_ -ne "vault" -and $_ -ne "vault-agent-controller" } 
 docker-compose -f $FILE up -d --force-recreate $TargetServices
 
-Remove-Item vault.csr, bundle.pem, ca.srl, v3.ext -ErrorAction SilentlyContinue
+Remove-Item vault.csr, bundle.pem, ca.srl, tmp.ext -ErrorAction SilentlyContinue
 
 Write-Host "`n=== ROTATION FINISHED ===" -ForegroundColor Green -BackgroundColor Black
