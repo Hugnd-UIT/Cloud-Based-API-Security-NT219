@@ -200,6 +200,8 @@ keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storety
 
 ## 3. Hướng dẫn vận hành
 
+*Lưu ý: Mỗi lần gọi API ở Postman khi có token mới hãy bỏ token vào "Token" của enviroment Payshield*
+
 **Make API request call**
 1: Mở Postman ở tab Authorization -> Get new access token -> Đăng nhập vào bằng tài khoản sau 
 
@@ -280,5 +282,4 @@ docker-compose down
 ./vault-rotation
 ```
 
-3: Thêm client.crt và client.key cho Postman
-4: Thêm client.p12 cho Chorme
+3: Thêm client.p12 cho Chorme
