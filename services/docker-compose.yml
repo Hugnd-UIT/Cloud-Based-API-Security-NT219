@@ -17,10 +17,7 @@ services:
 
     volumes:
       - payshield_vault_data:/vault/file
-      - ../kms/ca.crt:/vault/certs/ca.crt:ro
-      - ../kms/ca.key:/vault/certs/ca.key:ro
-      - ../kms/vault.crt:/vault/certs/vault.crt:ro
-      - ../kms/vault.key:/vault/certs/vault.key:ro
+      - ../kms:/vault/certs:ro
 
 
   vault-agent-controller:
