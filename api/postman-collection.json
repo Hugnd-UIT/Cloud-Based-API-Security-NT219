@@ -436,6 +436,16 @@
     "type": "oauth2",
     "oauth2": [
       {
+        "key": "useBrowser",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "redirect_uri",
+        "value": "https://oauth.pstmn.io/v1/callback",
+        "type": "string"
+      },
+      {
         "key": "accessTokenUrl",
         "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/token",
         "type": "string"
@@ -479,11 +489,6 @@
         "key": "challengeAlgorithm",
         "value": "S256",
         "type": "string"
-      },
-      {
-        "key": "useBrowser",
-        "value": true,
-        "type": "boolean"
       },
       {
         "key": "addTokenTo",

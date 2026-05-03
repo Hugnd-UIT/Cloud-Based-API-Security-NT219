@@ -38,9 +38,17 @@ function OpaHandler:access(conf)
   if not res then return kong.response.exit(500, { message = "OPA Unavailable", reason = err }) end
 
   local opa_response = cjson.decode(res.body)
+  
   if not opa_response or (opa_response.result and opa_response.result.allow ~= true) then
+    
+    local debug_info = "Không có data debug"
+    if opa_response and opa_response.result and opa_response.result.debug then
+      debug_info = opa_response.result.debug
+    end
+
     return kong.response.exit(403, { 
       message = "Access Denied by OPA Policy",
+      opa_debug_log = debug_info
     })
   end
 end

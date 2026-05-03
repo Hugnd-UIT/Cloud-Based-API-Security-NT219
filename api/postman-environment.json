@@ -16,7 +16,7 @@
 		},
 		{
 			"key": "Secret",
-			"value": "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ",
+			"value": "Nhập client secret của keycloak",
 			"type": "default",
 			"enabled": true
 		},
