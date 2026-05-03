@@ -55,7 +55,7 @@ send("SCENARIO 1: VALID USER", use_mtls=True, custom_headers=valid_headers)
 send("SCENARIO 2: EXTERNAL HACKER", use_mtls=False, custom_headers=valid_headers)
 
 # TRƯỜNG HỢP 3: NHÂN VIÊN XẤU
-send("SCENARIO 3: ROGUE INSIDER (Replay Original Packet)", use_mtls=True, custom_headers=valid_headers)
+send("SCENARIO 3: ROGUE INSIDER", use_mtls=True, custom_headers=valid_headers)
 
 # TRƯỜNG HỢP 4: HACK NEW NONCE
 tampered_headers = valid_headers.copy()
@@ -72,4 +72,4 @@ expired_headers = {
     "X-Signature": old_sig
 }
 
-send("SCENARIO 5: EXPIRED REQUEST (Timestamp > 60s)", use_mtls=True, custom_headers=expired_headers)
+send("SCENARIO 5: EXPIRED REQUEST", use_mtls=True, custom_headers=expired_headers)
