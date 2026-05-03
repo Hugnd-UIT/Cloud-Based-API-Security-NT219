@@ -132,7 +132,7 @@ docker cp payshield_vault_agent:/tmpfs/certs/client/server.crt ./client.crt
 docker cp payshield_vault_agent:/tmpfs/certs/client/server.key ./client.key
 ```
 
-*Sau khi chạy xong sẽ xuất hiện server.crt và server.key ở thư mục kms, chứng chỉ và khóa này sẽ dùng cho client gọi API*
+*Sau khi chạy xong sẽ xuất hiện client.crt và client.key ở thư mục kms, chứng chỉ và khóa này sẽ dùng cho client gọi API*
 
 ### Bước 2.4: Thêm chứng chỉ vào Chrome
 
@@ -262,7 +262,7 @@ docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-
 
 docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8181 payshield_opa | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
 
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_webserver | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
+docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_proxy | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
 
 docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_waf | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
 
