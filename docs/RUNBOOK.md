@@ -192,7 +192,7 @@ keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storety
 1: Mở Postman và import collections bằng file "postman-collection.json" trong thư mục api
 2: Import enviroment bằng file "postman-environment" trong thư mục api
 3: Mở Settings -> App settings -> Certificates -> Tích chọn CA certificates -> Import file ca.cert trong thư mục cert vào PEM file
-4: Chọn Add Certificate -> Tạo cert cho 2 đường dẫn là localhost:8444 và localhost:8888, CRT file và KEY file chọn server.crt và server.key trong thư mục kms
+4: Chọn Add Certificate -> Tạo cert cho 2 đường dẫn là localhost:8444 và localhost:8888, CRT file và KEY file chọn client.crt và client.key trong thư mục kms
 
 *Lưu ý: Client ID là payshield-app và Client Secret là Client Secret của Keycloak hãy sửa lại*
 
