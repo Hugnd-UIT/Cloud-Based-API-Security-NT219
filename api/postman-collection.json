@@ -436,6 +436,16 @@
     "type": "oauth2",
     "oauth2": [
       {
+        "key": "useBrowser",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "redirect_uri",
+        "value": "https://oauth.pstmn.io/v1/callback",
+        "type": "string"
+      },
+      {
         "key": "accessTokenUrl",
         "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/token",
         "type": "string"
@@ -481,11 +491,6 @@
         "type": "string"
       },
       {
-        "key": "useBrowser",
-        "value": true,
-        "type": "boolean"
-      },
-      {
         "key": "addTokenTo",
         "value": "header",
         "type": "string"
@@ -500,7 +505,23 @@
         "packages": {},
         "requests": {},
         "exec": [
-          ""
+          "const method = pm.request.method;\r",
+          "const uri = pm.request.url.getPath();\r",
+          "\r",
+          "const timestamp = Math.floor(Date.now() / 1000).toString();\r",
+          "\r",
+          "const nonce = pm.variables.replaceIn('{{$guid}}');\r",
+          "\r",
+          "let token = pm.environment.get(\"Token\");\r",
+          "\r",
+          "const secret = pm.environment.get(\"Secret\");\r",
+          "const payload = `${method}|${uri}|${timestamp}|${nonce}|${token}`;\r",
+          "\r",
+          "const signature = CryptoJS.HmacSHA256(payload, secret).toString(CryptoJS.enc.Hex);\r",
+          "\r",
+          "pm.request.headers.add({ key: 'X-Timestamp', value: timestamp });\r",
+          "pm.request.headers.add({ key: 'X-Nonce', value: nonce });\r",
+          "pm.request.headers.add({ key: 'X-Signature', value: signature });"
         ]
       }
     },

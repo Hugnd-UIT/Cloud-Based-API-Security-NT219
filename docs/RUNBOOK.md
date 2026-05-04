@@ -40,6 +40,7 @@ docker exec -it `
   payshield_vault `
   vault operator init
 ```
+
 *Lưu ý: Lưu ngay 5 Unseal Keys và Root Token vào nơi an toàn*
 
 3: Tạo biến chưa key trong .env
@@ -138,11 +139,11 @@ docker cp payshield_vault_agent:/tmpfs/certs/client/server.key ./client.key
 
 * **Tạo chứng chỉ định dạng PKCS cho Chrome**
 
-1: Chạy terminal tại thư mục services
+1: Chạy terminal tại thư mục kms
 2: Chạy lệnh sau:
 
 ```bash
-openssl pkcs12 -export -out client.p12 -inkey server.key -in server.crt -certfile ca.crt
+openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfile ca.crt
 ```
 
 => Lệnh yêu cầu nhập mật khẩu hãy nhập "HugndUIT" hoặc khác tùy ý. Sau đó sẽ xuất hiện file client.p12.
@@ -158,21 +159,50 @@ openssl pkcs12 -export -out client.p12 -inkey server.key -in server.crt -certfil
 1: Truy cập "https://localhost:8444/admin/" và đăng nhập bằng username (admin), pass (admin)
 2: Chọn Create Realm -> Browse -> Chọn file keycloak-export.json trong thư mục idp
 3: Chọn Realm settings -> Key -> Lưu Public key của thuật toán RS256 cho bước tiếp theo
+
 *Lưu ý: Chọn đúng realm là payshield-realm* 
+
+*Export Keycloak configuration data - Nếu có chỉnh sửa Keycloak*
+
+1: Chạy terminal tại thư mục services
+2: Chạy lệnh sau:
+
+```bash
+docker exec -it payshield_keycloak `
+  /opt/keycloak/bin/kc.sh export `
+  --file /tmp/keycloak-export.json `
+  --realm payshield-realm `
+  --users realm_file
+
+docker cp payshield_keycloak:/tmp/keycloak-export.json `
+  ../idp/keycloak-export.json
+```
+
+*Truststore creation for Keycloak - Nếu chưa có file truststore*
+
+1: Chạy terminal tại thư mục kms
+2: Chạy lệnh sau:
+
+```bash
+keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storetype PKCS12 -storepass password
+```
 
 ### Bước 2.6: Khởi động Postman
 
 1: Mở Postman và import collections bằng file "postman-collection.json" trong thư mục api
 2: Import enviroment bằng file "postman-environment" trong thư mục api
 3: Mở Settings -> App settings -> Certificates -> Tích chọn CA certificates -> Import file ca.cert trong thư mục cert vào PEM file
-4: Chọn Add Certificate -> Tạo cert cho 2 đường dẫn là localhost:8444 và localhost:8888, CRT file và KEY file chọn server.crt và server.key trong thư mục kms
+4: Chọn Add Certificate -> Tạo cert cho 2 đường dẫn là localhost:8444 và localhost:8888, CRT file và KEY file chọn client.crt và client.key trong thư mục kms
+
 *Lưu ý: Client ID là payshield-app và Client Secret là Client Secret của Keycloak hãy sửa lại*
 
 ---
 
 ## 3. Hướng dẫn vận hành
 
-**Call API**
+*Lưu ý: Mỗi lần gọi API ở Postman khi có token mới hãy bỏ token vào "Token" của enviroment Payshield*
+
+**Make API request call**
 1: Mở Postman ở tab Authorization -> Get new access token -> Đăng nhập vào bằng tài khoản sau 
 
 *Tài khoản manager*
@@ -189,7 +219,7 @@ password: example
 
 2: Chọn use token -> Chọn API muốn gọi đến và nhấn Send.
 
-**Call Webhook**
+**Make Webhook request call**
 1: Nhấn send API POST/VNPay 
 2: Nhận phản hồi 200OK và nhận được link payment_url
 3: Copy link vào trình duyệt -> Chọn "Thẻ nội địa và tài khoản ngân hàng" -> Chọn NCB -> Nhập tài khoản sau:
@@ -203,42 +233,21 @@ Ngày phát hành: 07/15
 4: Nhấn tiếp tục -> nhập OPT là: "123456" -> Trình duyệt trả về một URL -> Copy URL vào và dán vào API GET/VNPay
 5: Sửa vnpay-return thành vnpay-ipn và nhấn send nếu thấy Confirm success là thành công
 
-**Use ELK**
+**Use ELK stack logging**
 1: Truy cập https://localhost:5601
 2: Đăng nhập bằng tài khoản username: elastic và pass: NguyenDuyHung
+
 *Mật khẩu ELK có thể khác kiểm tra ELK_PASSWORD trong env*
 
----
-
-## 4. Một số lưu ý
-
-### Tắt hệ thống an toàn
-
-1: Chạy terminal tại thư mục services
+**Verify encryption algorithm security**
+1: Chạy terminal tại thư mục docs
 2: Chạy lệnh sau:
 
 ```bash
-docker-compose down
-```
-*Lưu ý: Không dùng cờ `-v` trừ khi muốn xóa sạch toàn bộ dữ liệu Database và Vault để làm lại từ đầu*
-
-### Xuất cấu hình keycloak
-
-1: Chạy terminal tại thư mục services
-2: Chạy lệnh sau:
-
-```bash
-docker exec -it payshield_keycloak `
-  /opt/keycloak/bin/kc.sh export `
-  --file /tmp/keycloak-export.json `
-  --realm payshield-realm `
-  --users realm_file
-
-docker cp payshield_keycloak:/tmp/keycloak-export.json `
-  ../idp/keycloak-export.json
+./validate-crypto
 ```
 
-### Khởi tạo dữ liệu database
+**Initialize Database sample data**
 
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
@@ -249,39 +258,28 @@ docker exec -it payshield_app php artisan cache:clear
 docker exec -it payshield_app php artisan migrate
 ```
 
-### Kiểm tra thuật toán mã hóa
+**Turn Off System Safely**
+
 1: Chạy terminal tại thư mục services
 2: Chạy lệnh sau:
 
 ```bash
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_kong | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8200 payshield_vault | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 3306 payshield_db | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8181 payshield_opa | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_proxy | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 8443 payshield_waf | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker run --rm --network services_default instrumentisto/nmap -sV --script ssl-enum-ciphers -p 5601 payshield_kibana | Select-String "Nmap scan report|PORT|TLSv|TLS_|_  least strength|^\|"
-
-docker exec -i payshield_kong openssl s_client -connect payshield_keycloak:8443 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
-
-docker exec -i payshield_kong openssl s_client -connect payshield_elasticsearch:9200 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
-
-docker exec -i payshield_kong openssl s_client -connect payshield_logstash:5044 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
-
-docker exec -i payshield_kong openssl s_client -connect payshield_app:443 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt -brief | Select-String "Protocol", "Cipher", "Verify"
+docker-compose down
 ```
 
-### Tạo file truststore cho Keycloak
+*Lưu ý: Không dùng cờ `-v` trừ khi muốn xóa sạch toàn bộ dữ liệu để làm lại từ đầu*
+
+---
+
+## 4. Xử lý sự cố
+
+### Key rotation
 
 1: Chạy terminal tại thư mục kms
 2: Chạy lệnh sau:
 
 ```bash
-keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storetype PKCS12 -storepass password
+./vault-rotation
 ```
+
+3: Thêm client.p12 cho Chorme

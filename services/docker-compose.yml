@@ -8,7 +8,7 @@ services:
       - "8200:8200"
 
     environment:
-      VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/file"}}, "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable": "0", "tls_cert_file": "/vault/certs/vault.crt", "tls_key_file": "/vault/certs/vault.key", "tls_require_and_verify_client_cert": "true", "tls_client_ca_file": "/vault/certs/ca.crt", "tls_cipher_suites": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"}}, "ui": true, "disable_mlock": true}'
+      VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/file"}}, "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable": "0", "tls_cert_file": "/vault/certs/vault.crt", "tls_key_file": "/vault/certs/vault.key", "tls_require_and_verify_client_cert": true, "tls_client_ca_file": "/vault/certs/ca.crt", "tls_cipher_suites": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"}}, "ui": true, "disable_mlock": true}'
 
     cap_add:
       - IPC_LOCK
@@ -17,10 +17,7 @@ services:
 
     volumes:
       - payshield_vault_data:/vault/file
-      - ../kms/ca.crt:/vault/certs/ca.crt:ro
-      - ../kms/ca.key:/vault/certs/ca.key:ro
-      - ../kms/vault.crt:/vault/certs/vault.crt:ro
-      - ../kms/vault.key:/vault/certs/vault.key:ro
+      - ../kms:/vault/certs:ro
 
 
   vault-agent-controller:
@@ -99,8 +96,8 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KEYCLOAK_ADMIN=${KC_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
-      - KC_DB_PASSWORD=${DB_PASSWORD}
       - KC_HTTPS_CLIENT_AUTH=request
+      - KC_HTTPS_TRUST_STORE_TYPE=PKCS12
       - KC_HTTPS_TRUST_STORE_FILE=/kms/truststore.p12
       - KC_HTTPS_TRUST_STORE_PASSWORD=password
       - KC_HTTPS_CERTIFICATE_FILE=/tmpfs/certs/server.crt

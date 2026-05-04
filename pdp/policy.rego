@@ -40,6 +40,14 @@ mtls_is_valid := true if {
 
 user_roles := object.get(object.get(token_payload, "realm_access", {}), "roles", [])
 
+debug := {
+    "token_valid": count(token_payload) > 0,
+    "mtls_match": mtls_is_valid,
+    "roles": user_roles,
+    "cert_postman": mtls_fingerprint,
+    "cert_token": expected_hex
+}
+
 # =====================================================================
 # POLICY: MANAGER - RBAC
 # =====================================================================
@@ -47,14 +55,6 @@ allow if {
     mtls_is_valid == true
     "manager" in user_roles
     startswith(input.request.http.path, "/api/")
-}
-
-debug := {
-    "1_is_token_valid": count(token_payload) > 0,
-    "2_mtls_match": mtls_is_valid,
-    "3_roles": user_roles,
-    "4_cert_postman": mtls_fingerprint,
-    "5_cert_token": expected_hex
 }
 
 # =====================================================================

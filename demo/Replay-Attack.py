@@ -1,31 +1,75 @@
 import requests
+import time
+import uuid
+import hmac
+import hashlib
 import urllib3
-from collections import defaultdict
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-URL = "https://localhost:8888/api/vnpay/create"
-TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJIbDVqRUNMbGxic29pTkp1ZUVGV3BaVnlhcldFeGxHNFBKVE54QnloN2tBIn0.eyJleHAiOjE3NzY2OTQzNDEsImlhdCI6MTc3NjY5NDA0MSwiYXV0aF90aW1lIjoxNzc2Njg5NTQwLCJqdGkiOiIwYmQwOTRlYy1jZWQ0LTRmZTktYTAyZC0zY2JjYzRkM2ZmYzEiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJzdWIiOiJiZWJiNjk1NC0wZTBmLTQ3ZmMtODkzZS0yNmFmZGY1NjYyNmEiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXlzaGllbGQtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6IjQwZTBjMDFkLTkxZjEtNGM1Ni04NjBiLTUzOTI4ZDdjY2FiOCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo2ODY4IiwiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHBzOi8vbG9jYWxob3N0Ojg4ODgiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImVtcGxveWVlIl19LCJjbmYiOnsieDV0I1MyNTYiOiJwVXFsaU50U3hGckl2LUgyQ01xMVNsYTFMekhMLW9xZHYxbkZtV1JQclYwIn0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI0MGUwYzAxZC05MWYxLTRjNTYtODYwYi01MzkyOGQ3Y2NhYjgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ikh1bmcgTmd1eWVuIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIiwiZ2l2ZW5fbmFtZSI6Ikh1bmciLCJmYW1pbHlfbmFtZSI6Ik5ndXllbiIsImVtYWlsIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIn0.ISK3pbckiMXezQv7sg7gHcIzNy8AmQmD7ZAGX8qbRCKwA5GL4nOPsJlte_qygBJEd8P32S32eN8oO4ItGLwRVLGdKo00VTNM6sOOeM69c1gWE_JVsvacw2__kFWHD9GnixFghOJoQsNL-tkw6_li28o-OU5tCFgtYJZ9jT3aR1v1dOvCxc25gBqnr8ofj4O-9GWFuvgxAS0HAR8hIQn-wNRe6o4mTlnHerc7CCutlTF5S7F0ZBz-Mu6Tr7UhziHO-Q-KmntEqFXW-DKJXIJIsdkPJNYNiJMB9WPbZEX_TKSGne0clKg2nCBlHhvA-ODAn8wCPWu_h8qIR5mPpskIjQ" 
-HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
-PAYLOAD = {"amount": 500000}
+# --- CONFIGURATION ---
+URL = "https://localhost:8888/api/dashboard/manager-data"
+URI = "/api/dashboard/manager-data"
+# Thay token vào đây
+TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJIbDVqRUNMbGxic29pTkp1ZUVGV3BaVnlhcldFeGxHNFBKVE54QnloN2tBIn0.eyJleHAiOjE3Nzc4MjI3NzEsImlhdCI6MTc3NzgyMjQ3MSwiYXV0aF90aW1lIjoxNzc3ODIxMTUxLCJqdGkiOiIyNjk5MTU2YS05NjA3LTRhMGEtYjIxZC0wMzk2NzU0OTRiMWQiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJzdWIiOiJmMjhkMmIzZi0wM2U4LTRjZDAtOWExNi03Njc3MGNlNjc5ZmQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXlzaGllbGQtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6Ijk1ZmNmOTY0LTUwZGYtNGM3Yi1iMDdlLWUzMmVmMzViMjVjMCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHBzOi8vbG9jYWxob3N0Ojg4ODgiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm1hbmFnZXIiXX0sImNuZiI6eyJ4NXQjUzI1NiI6IjRaa054RFpmVW9zQzhkQ0szTllza01fcGlTTUdrcG8zTDQyd284WlkyeFUifSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsInNpZCI6Ijk1ZmNmOTY0LTUwZGYtNGM3Yi1iMDdlLWUzMmVmMzViMjVjMCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiSHVuZyBOZ3V5ZW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtYW5hZ2VyLWV4YW1wbGVAcGF5c2hpZWxkLmNvbSIsImdpdmVuX25hbWUiOiJIdW5nIiwiZmFtaWx5X25hbWUiOiJOZ3V5ZW4iLCJlbWFpbCI6Im1hbmFnZXItZXhhbXBsZUBwYXlzaGllbGQuY29tIn0.kPY3cBSn76L_vomkFkBoB5635emzv9rr5_rleKSynPAo_T6xXZcUpYPqaL9qaUQ5vw8tgQ2UGGbR_NBWZhJrhUkkzFnN7IduOg0O3BEYZ9-Jc8a_feRGofachGkwuZxTwQIXdsDZwIP5p-eGrKMjhsXMMCyej53JOA0kzVhcsgzCMsdl7b2-x26cMg7XHS8aVk2wCxgzvWltFfvEnDuCFQihdJsUZQRfxz_fmOaSWboZPJ9c1tZLFpwEik6tlOSkAGL_EVZp1FUcJsF1ZM4562I_M-OEMb6IpNJAvrU2388QoOY8a7fF2cDa4ZOOHq6oVQS8soexodx1_QvZ9Cn-tg" 
+# Thay client secret vào đây
+SECRET = "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ" 
 
-def replay_attack_no_cert():
-    stats = defaultdict(int)
-    print("=== REPLAY ATTACK ===")
+CA = 'kms/ca.crt'
+CLIENT = ('kms/client.crt', 'kms/client.key')
+
+def payload(method, uri, ts, nonce, token, secret):
+    payload = f"{method}|{uri}|{ts}|{nonce}|{token}"
+    return hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+
+def send(label, use_mtls=True, custom_headers=None):
+    print(f"\n--- {label} ---")
+    headers = custom_headers if custom_headers else {}
+    cert = CLIENT if use_mtls else None
     
-    for i in range(1, 100):
-        try:
-            res = requests.post(URL, headers=HEADERS, json=PAYLOAD, verify=False, timeout=5)
-            stats[res.status_code] += 1
-            print(f"[*] Lần {i}: HTTP {res.status_code}")
-        except requests.exceptions.SSLError as e:
-            print(f"[*] Lần {i}: Lỗi SSL")
-            stats["SSL Error"] += 1
-        except Exception as e:
-            stats["Error"] += 1
+    try:
+        response = requests.get(URL, headers=headers, cert=cert, verify=False)
+        print(f"Status: {response.status_code}")
+        print(f"Response: {response.text}")
+        return headers
+    except requests.exceptions.SSLError as e:
+        print(f"❌ SSL Error: {e}")
+    except Exception as e:
+        print(f"❌ Error: {e}")
 
-    print(f"\n--- KẾT QUẢ ---")
-    for status, count in stats.items():
-        print(f"{status}: {count} lần")
+# TRƯỜNG HỢP 1: NGƯỜI DÙNG HỢP LỆ
+ts = str(int(time.time()))
+nonce = str(uuid.uuid4())
+sig = payload("GET", URI, ts, nonce, TOKEN, SECRET)
 
-replay_attack_no_cert()
+valid_headers = {
+    "Authorization": f"Bearer {TOKEN}",
+    "X-Timestamp": ts,
+    "X-Nonce": nonce,
+    "X-Signature": sig
+}
+
+send("SCENARIO 1: VALID USER", use_mtls=True, custom_headers=valid_headers)
+
+# TRƯỜNG HỢP 2: HACKER NGOÀI MẠNG
+send("SCENARIO 2: EXTERNAL HACKER", use_mtls=False, custom_headers=valid_headers)
+
+# TRƯỜNG HỢP 3: NHÂN VIÊN XẤU
+send("SCENARIO 3: ROGUE INSIDER", use_mtls=True, custom_headers=valid_headers)
+
+# TRƯỜNG HỢP 4: HACK NEW NONCE
+tampered_headers = valid_headers.copy()
+tampered_headers["X-Nonce"] = str(uuid.uuid4())
+send("SCENARIO 4: TAMPERING ATTACK", use_mtls=True, custom_headers=tampered_headers)
+
+# TRƯỜNG HỢP 5: TIMESTAMP QUÁ HẠN 
+old_ts = str(int(time.time()) - 120) 
+old_sig = payload("GET", URI, old_ts, nonce, TOKEN, SECRET)
+expired_headers = {
+    "Authorization": f"Bearer {TOKEN}",
+    "X-Timestamp": old_ts,
+    "X-Nonce": str(uuid.uuid4()),
+    "X-Signature": old_sig
+}
+
+send("SCENARIO 5: EXPIRED REQUEST", use_mtls=True, custom_headers=expired_headers)
