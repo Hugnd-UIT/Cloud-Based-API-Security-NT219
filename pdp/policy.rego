@@ -5,17 +5,12 @@ import future.keywords.if
 
 default allow := false
 
-jwks_request := http.send({
-    "url": "https://keycloak:8443/realms/payshield-realm/protocol/openid-connect/certs",
-    "tls_insecure_skip_verify": true, 
-    "method": "GET"
-})
-
 token_payload := payload if {
     auth_header := object.get(input.request.http.headers, "authorization", "")
     token := trim_space(replace(auth_header, "Bearer ", ""))
-    [valid, _, payload] := io.jwt.decode_verify(token, {"cert": jwks_request.raw_body})
-    valid == true
+    
+    # Dùng hàm decode đơn giản, bỏ qua bước verify
+    [_, payload, _] := io.jwt.decode(token)
 } else := {}
 
 mtls_fingerprint := actual_hex if {
@@ -39,14 +34,6 @@ mtls_is_valid := true if {
 } else := false
 
 user_roles := object.get(object.get(token_payload, "realm_access", {}), "roles", [])
-
-debug := {
-    "token_valid": count(token_payload) > 0,
-    "mtls_match": mtls_is_valid,
-    "roles": user_roles,
-    "cert_postman": mtls_fingerprint,
-    "cert_token": expected_hex
-}
 
 # =====================================================================
 # POLICY: MANAGER - RBAC

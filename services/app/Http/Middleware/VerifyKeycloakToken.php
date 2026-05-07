@@ -5,35 +5,41 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Firebase\JWT\JWT;
+use Firebase\JWT\JWK;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class VerifyKeycloakToken
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        // Get token from request
         $token = $request->bearerToken();
 
-        // Check if token exists, otherwise return 401
         if (!$token) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error: You are not logged in or token is missing!'
+                'message' => 'Error 401: App - Missing Token!'
             ], 401);
         }
 
-        $tokenParts = explode('.', $token);
-        
-        if (count($tokenParts) === 3) {
-            $payload = json_decode(base64_decode($tokenParts[1]));
+        try {
+            $jwks = Cache::remember('keycloak_jwks', 3600, function () {
+                $response = Http::keycloak()->get('/realms/payshield-realm/protocol/openid-connect/certs');
+                return $response->json();
+            });
+
+            $decoded = JWT::decode($token, JWK::parseKeySet($jwks));
+
             $request->merge([
-                'user_email' => $payload->email ?? null,
-                'user_roles' => $payload->realm_access->roles ?? []
+                'user_email' => $decoded->email ?? null,
+                'user_roles' => $decoded->realm_access->roles ?? []
             ]);
+
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            return response()->json(['message' => 'Error 401: Token has expired!'], 401);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Lỗi xác minh: ' . $e->getMessage()], 403);
         }
 
         return $next($request);

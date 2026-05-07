@@ -70,7 +70,7 @@ docker cp payshield_vault_agent:/tmpfs/certs/client/server.key ./client.key
 
 Remove-Item truststore.p12 -ErrorAction SilentlyContinue
 keytool -importcert -file ca.crt -alias RootCA -keystore truststore.p12 -storetype PKCS12 -storepass "$PASS" -noprompt
-openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -passout "pass:$PASS" -name "PayShield-Client-v2"
+openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfile ca.crt -passout "pass:$PASS" -name "PayShield-Client-v2"
 
 $TargetServices = (docker-compose -f $FILE config --services) | Where-Object { $_ -ne "vault" -and $_ -ne "vault-agent-controller" } 
 docker-compose -f $FILE up -d --force-recreate $TargetServices
