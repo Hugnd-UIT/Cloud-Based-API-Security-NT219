@@ -26,9 +26,6 @@ docker exec -i payshield_app sh -c "echo 'Q' | openssl s_client -starttls mysql 
 Write-Host "`n[+] Kong <-> OPA" -ForegroundColor Yellow
 docker exec -i payshield_kong sh -c "echo 'Q' | openssl s_client -connect payshield_opa:8181 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt 2>/dev/null | grep -m 2 -E 'Cipher|Verify return code'"
 
-Write-Host "`n[+] OPA <-> Keycloak" -ForegroundColor Yellow
-docker exec -i payshield_kong sh -c "echo 'Q' | openssl s_client -connect payshield_keycloak:8443 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /kms/ca.crt 2>/dev/null | grep -E 'Cipher|Verify return code'"
-
 Write-Host "`n[+] Filebeat -> SIEM" -ForegroundColor Yellow
 docker exec -i payshield_filebeat sh -c "echo 'Q' | openssl s_client -connect payshield_logstash:5044 -cert /tmpfs/certs/server.crt -key /tmpfs/certs/server.key -CAfile /etc/certs/ca.crt 2>/dev/null | grep -E 'Cipher|Verify return code'"
 

@@ -39,7 +39,7 @@ class VerifyKeycloakToken
         } catch (\Firebase\JWT\ExpiredException $e) {
             return response()->json(['message' => 'Error 401: Token has expired!'], 401);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Lỗi xác minh: ' . $e->getMessage()], 403);
+            return response()->json(['message' => $e->getMessage()], 403);
         }
 
         return $next($request);

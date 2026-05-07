@@ -9,7 +9,6 @@ token_payload := payload if {
     auth_header := object.get(input.request.http.headers, "authorization", "")
     token := trim_space(replace(auth_header, "Bearer ", ""))
     
-    # Dùng hàm decode đơn giản, bỏ qua bước verify
     [_, payload, _] := io.jwt.decode(token)
 } else := {}
 
