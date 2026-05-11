@@ -55,5 +55,16 @@ class AppServiceProvider extends ServiceProvider
                 Log::error('Cannot connect to Vault using mTLS: ' . $e->getMessage());
             }
         }
+
+        \Illuminate\Support\Facades\Http::macro('keycloak', function () {
+            return \Illuminate\Support\Facades\Http::withOptions([
+                'verify'  => '/kms/ca.crt',
+                'cert'    => '/kms/client.crt', 
+                'ssl_key' => '/kms/client.key',
+                'curl'    => [
+                    CURLOPT_SSL_VERIFYHOST => 0, 
+                ]
+            ])->baseUrl('https://keycloak:8443'); 
+        });
     }
 }
