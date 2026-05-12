@@ -158,7 +158,7 @@ openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfil
 
 1: Truy cập "https://localhost:8444/admin/" và đăng nhập bằng username (admin), pass (admin)
 2: Chọn Create Realm -> Browse -> Chọn file keycloak-export.json trong thư mục idp
-3: Chọn Realm settings -> Key -> Lưu Public key của thuật toán RS256 cho bước tiếp theo
+3: Chọn Realm settings -> Key -> Lưu Public key của thuật toán ES256 cho bước tiếp theo
 
 *Lưu ý: Chọn đúng realm là payshield-realm* 
 
