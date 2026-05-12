@@ -20,7 +20,7 @@ Cụ thể là sử dụng Envelope Encryption:
 
 ### 1.3. Chữ ký & xác thực (Signing & Verification)
 
-Hệ thống sử dụng thuật toán RS256 - RSA + SHA256 được cấu hình trên Keycloak để thực hiện việc ký và xác thực token.
+Hệ thống sử dụng thuật toán ES256 - ECC + SHA256 được cấu hình trên Keycloak để thực hiện việc ký và xác thực token.
 
 Cụ thể:
 - Token (JWT) sẽ được ký bằng private key  

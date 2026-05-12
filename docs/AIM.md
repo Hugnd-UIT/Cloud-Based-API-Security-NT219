@@ -20,7 +20,7 @@ Hệ thống PayShield được xây dựng để quản lý lương nhân viên
 - Sử dụng mô hình KEK/DEK - Key Encryption Key / Data Encryption Key, trong đó key được lưu và quản lý tại Vault để bảo vệ dữ liệu bảng lương.
 
 **Khóa chữ ký**
-- Sử dụng cặp khóa bất đối xứng - RS256 do Keycloak quản lý để ký và xác thực token.
+- Sử dụng cặp khóa bất đối xứng - ES256 do Keycloak quản lý để ký và xác thực token.
 
 **Thông tin xác thực**
 - Bao gồm thông tin đăng nhập database, API key của bên thứ ba - VNPay và private key dùng cho mTLS giữa các service nội bộ.

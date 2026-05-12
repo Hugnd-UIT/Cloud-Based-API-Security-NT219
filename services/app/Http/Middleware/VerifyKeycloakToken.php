@@ -45,9 +45,3 @@ class VerifyKeycloakToken
         return $next($request);
     }
 }
-
-// RS256 is a digital signature: combination of RSA and SHA-256
-// RSA - Asymmetric encryption:
-//      Mechanism: Use Keycloak's private key to sign the token. Use public key to verify the signature.
-// SHA-256 - Hash function:
-//      Mechanism: Before signing with RSA, the token data is hashed into a shorter string.
