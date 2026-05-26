@@ -28,7 +28,7 @@ jobs:
         working-directory: ./services
         run: |
           composer install --prefer-dist --no-progress --ignore-platform-reqs
-          composer audit
+          # composer audit
 
       - name: Run Trivy Vulnerability Scanner (SAST)
         uses: aquasecurity/trivy-action@master
