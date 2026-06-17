@@ -9,17 +9,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # --- CONFIGURATION ---
 BASE_URL = "https://localhost:8888"
-# Thay token vào đây
-TOKEN = "eyJhbGciOiJFUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIwSGtPQy1TVE1pSE44aGlTZkhBU1p5Z1pUbHpLQXVyMmU0S3VSb291VW5BIn0.eyJleHAiOjE3Nzg1NjQ3NjcsImlhdCI6MTc3ODU2NDQ2NywiYXV0aF90aW1lIjoxNzc4NTY0MTYyLCJqdGkiOiJjZGM3NmYzMy02MzI1LTQxNzEtYWFhOS1mMmU3ZTRhYzhiMzYiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJzdWIiOiJiZWJiNjk1NC0wZTBmLTQ3ZmMtODkzZS0yNmFmZGY1NjYyNmEiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXlzaGllbGQtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6IjljZTg4NDAyLWFiOWEtNDBlNy04NmNjLWNkODgwNzAwNmYxNCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHBzOi8vbG9jYWxob3N0Ojg4ODgiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImVtcGxveWVlIl19LCJjbmYiOnsieDV0I1MyNTYiOiJ5NEJRWmNRTEJIeVcyQ09wbnA0ejhwWmJTaHM3cy1aemszRG1UczcxVzBBIn0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI5Y2U4ODQwMi1hYjlhLTQwZTctODZjYy1jZDg4MDcwMDZmMTQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ikh1bmcgTmd1eWVuIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIiwiZ2l2ZW5fbmFtZSI6Ikh1bmciLCJmYW1pbHlfbmFtZSI6Ik5ndXllbiIsImVtYWlsIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIn0.I71e1n-PsFdEFWcl3kj4ZwpCbtuVbj7TarVNh4NHyjYZ-QUY-wA8HZ_aVIBPY4AnO0o3TydO1Am1rxyHE5bHfw"
-# Thay client secret vào đây
-SECRET = "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ"
 
-CA = 'kms/ca.crt'
-CLIENT = ('kms/client.crt', 'kms/client.key')
+TOKEN = "eyJhbGciOiJFUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJqbm1MNU1CQ3ZXelR2V2xaVFo0S0hXU0gwV2V5ZmhzaUduLVUwSkNmdWN3In0.eyJleHAiOjE3ODEwOTE3NTMsImlhdCI6MTc4MTA5MTQ1MywiYXV0aF90aW1lIjoxNzgxMDkxNDA0LCJqdGkiOiI0OGRlOTgzYi0zMDI5LTRhNWEtYTZkYy0wZTVhMDhjNzVkYTciLCJpc3MiOiJodHRwczovL3BheXNoaWVsZC5kdWNrZG5zLm9yZzo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMzY4NmEwYTEtNGQ5NS00ZTEwLWI5ZGUtNzQ2ZTYxYmUwNGZhIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGF5c2hpZWxkLWFwcCIsInNlc3Npb25fc3RhdGUiOiIzMDUzMDVhZi02NmY4LTQxZjQtOTBkOS0zNDUwZDI1MGY1NTgiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwiZGVmYXVsdC1yb2xlcy1wYXlzaGllbGQtcmVhbG0iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImVtcGxveWVlIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsInNpZCI6IjMwNTMwNWFmLTY2ZjgtNDFmNC05MGQ5LTM0NTBkMjUwZjU1OCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJlbXBsb3llZS1leGFtcGxlQHBheXNoaWVsZC5jb20iLCJlbWFpbCI6ImVtcGxveWVlLWV4YW1wbGVAcGF5c2hpZWxkLmNvbSJ9.PFJDtZJtfjBVjjhYtHdy0ZciXLaqafVjz9mBh_-m9vSYpDwUOu8pAYuApRDzNC1F61IqZjaHE8BMcBTm_-5Zyw"
+
+SECRET = "gTPf9LYwK20ngQcRSd9mTiCxmXLKze7n" 
 
 def payload(method, uri, ts, nonce, token, secret):
-    payload = f"{method}|{uri}|{ts}|{nonce}|{token}"
-    return hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    payload_str = f"{method}|{uri}|{ts}|{nonce}|{token}"
+    return hmac.new(secret.encode(), payload_str.encode(), hashlib.sha256).hexdigest()
 
 def send(label, method, uri, json_data=None):
     print(f"\n--- {label} ---")
@@ -40,38 +37,45 @@ def send(label, method, uri, json_data=None):
     print(f"Target: {method} {uri}")
     
     try:
-        response = requests.request(method, url, headers=headers, json=json_data, cert=CLIENT, verify=False, timeout=20)
+        response = requests.request(method, url, headers=headers, json=json_data, verify=False, timeout=10)
         print(f"Status: {response.status_code}")
-        print(f"Response: {response.text[:150]}" + ("..." if len(response.text) > 150 else ""))
+        preview = response.text[:200] + ("..." if len(response.text) > 200 else "")
+        print(f"Response: {preview}")
+        
     except requests.exceptions.SSLError as e:
-        print(f"❌ SSL Error: {e}")
+        print(f"❌ SSL Error: mTLS bị từ chối - {e}")
     except Exception as e:
         print(f"❌ Error: {e}")
 
 # SCENARIO 1: VALID ACCESS 
 send(
-    label="SCENARIO 1: VALID ACCESS", 
-    method="GET", 
-    uri="/api/profile"
-)
-
-# SCENARIO 2: ABAC - TIME CONSTRAINT
-send(
-    label="SCENARIO 2: ABAC CONSTRAINT", 
+    label="SCENARIO 1: VALID ACCESS (NV001 xem lương của chính mình)", 
     method="GET", 
     uri="/api/salary"
 )
 
-# SCENARIO 3: HORIZONTAL BOLA / PRIVILEGE ESCALATION
+# SCENARIO 2: HORIZONTAL BOLA 
 send(
-    label="SCENARIO 3: ESCALATION", 
+    label="SCENARIO 2: HORIZONTAL BOLA (NV001 cố xem lương của NV002)", 
+    method="GET", 
+    uri="/api/salary?manv=NV002"
+)
+
+# SCENARIO 3: VERTICAL BOLA 
+send(
+    label="SCENARIO 3: VERTICAL BOLA / ESCALATION (NV001 truy cập Dashboard Sếp)", 
     method="GET", 
     uri="/api/dashboard/manager-data"
 )
 
-# SCENARIO 4: VERTICAL BOLA
+# SCENARIO 4: ACTION ESCALATION 
+malicious_payload = {
+    "CHUCVU": "Manager",
+    "TIENLUONGCB": 50000000
+}
 send(
-    label="SCENARIO 4: VERTICAL BOLA", 
-    method="DELETE", 
-    uri="/api/salary"
+    label="SCENARIO 4: ACTION ESCALATION (NV001 cố tình sửa chức vụ/lương)", 
+    method="PUT", 
+    uri="/api/employees/NV001",
+    json_data=malicious_payload
 )

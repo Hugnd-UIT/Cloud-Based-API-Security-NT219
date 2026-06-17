@@ -633,7 +633,7 @@
       "client_credentials.use_refresh_token" : "false",
       "acr.loa.map" : "{}",
       "require.pushed.authorization.requests" : "false",
-      "tls.client.certificate.bound.access.tokens" : "true",
+      "tls.client.certificate.bound.access.tokens" : "false",
       "display.on.consent.screen" : "false",
       "pkce.code.challenge.method" : "S256",
       "token.response.type.bearer.lower-case" : "false"

@@ -164,27 +164,6 @@ EOF
 }
 
 # ==========================================
-# OPA
-# ==========================================
-template {
-  contents = <<EOF
-{{ with secret "pki/issue/payshield-role" "common_name=payshield_opa" "alt_names=payshield_opa" "ttl=24h" }}
-{{ .Data.certificate }}
-{{ .Data.issuing_ca }}
-{{ end }}
-EOF
-  destination = "/tmpfs/certs/opa/server.crt"
-}
-template {
-  contents = <<EOF
-{{ with secret "pki/issue/payshield-role" "common_name=payshield_opa" "alt_names=payshield_opa" "ttl=24h" }}
-{{ .Data.private_key }}
-{{ end }}
-EOF
-  destination = "/tmpfs/certs/opa/server.key"
-}
-
-# ==========================================
 # SIEM
 # ==========================================
 template {

