@@ -16,28 +16,6 @@ auto_auth {
 }
 
 # ==========================================
-# CLIENT
-# ==========================================
-template {
-  contents = <<EOF
-{{ with secret "pki/issue/payshield-role" "common_name=payshield_client" "ttl=24h" }}
-{{ .Data.certificate }}
-{{ .Data.issuing_ca }}
-{{ end }}
-EOF
-  destination = "/tmpfs/certs/client/server.crt"
-}
-
-template {
-  contents = <<EOF
-{{ with secret "pki/issue/payshield-role" "common_name=payshield_client" "ttl=24h" }}
-{{ .Data.private_key }}
-{{ end }}
-EOF
-  destination = "/tmpfs/certs/client/server.key"
-}
-
-# ==========================================
 # KONG
 # ==========================================
 template {
