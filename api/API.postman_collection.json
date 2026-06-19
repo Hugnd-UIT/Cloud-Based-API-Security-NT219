@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "11a9a0a2-6d66-438f-bea8-7507026c1c09",
+    "_postman_id": "a47cbe39-2d39-42df-81fb-7a44ce0467b2",
     "name": "API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "50000228",
-    "_collection_link": "https://go.postman.co/collection/50000228-11a9a0a2-6d66-438f-bea8-7507026c1c09?source=collection_link"
+    "_exporter_id": "54163829",
+    "_collection_link": "https://go.postman.co/collection/54163829-a47cbe39-2d39-42df-81fb-7a44ce0467b2?source=collection_link"
   },
   "item": [
     {
@@ -13,10 +13,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/dashboard/manager-data",
+          "raw": "https://payshield.duckdns.org:8888/api/dashboard/manager-data",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -34,10 +36,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/employees",
+          "raw": "https://payshield.duckdns.org:8888/api/employees",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -54,10 +58,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/employees/NV000",
+          "raw": "https://payshield.duckdns.org:8888/api/employees/NV000",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -84,10 +90,12 @@
           }
         },
         "url": {
-          "raw": "https://localhost:8888/api/employees",
+          "raw": "https://payshield.duckdns.org:8888/api/employees",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -113,10 +121,12 @@
           }
         },
         "url": {
-          "raw": "https://localhost:8888/api/employees/NV000",
+          "raw": "https://payshield.duckdns.org:8888/api/employees/NV000",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -134,10 +144,12 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/employees/NV000",
+          "raw": "https://payshield.duckdns.org:8888/api/employees/NV000",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -155,10 +167,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/payrolls?month=3&year=2026",
+          "raw": "https://payshield.duckdns.org:8888/api/payrolls?month=3&year=2026",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -185,10 +199,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/dashboard/employee-data",
+          "raw": "https://payshield.duckdns.org:8888/api/dashboard/employee-data",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -206,10 +222,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/profile",
+          "raw": "https://payshield.duckdns.org:8888/api/profile",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -226,10 +244,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/salary",
+          "raw": "https://payshield.duckdns.org:8888/api/salary",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -246,10 +266,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
+          "raw": "https://payshield.duckdns.org:8888/api/employees?ip=127.0.0.1;cat /etc/passwd",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -272,10 +294,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/employees?name=<script>alert('Hacked!')</script>",
+          "raw": "https://payshield.duckdns.org:8888/api/employees?name=<script>alert('Hacked!')</script>",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -298,10 +322,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
+          "raw": "https://payshield.duckdns.org:8888/api/employees?search=1' UNION SELECT username, password FROM users--",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -346,10 +372,12 @@
           }
         },
         "url": {
-          "raw": "https://localhost:8888/api/vnpay/create",
+          "raw": "https://payshield.duckdns.org:8888/api/vnpay/create",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -367,10 +395,12 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://localhost:8888/api/vnpay-ipn?vnp_Amount=50000000&vnp_BankCode=NCB&vnp_BankTranNo=VNP15493492&vnp_CardType=ATM&vnp_OrderInfo=Salary+advance+for+order%3A+20260412165140159&vnp_PayDate=20260412235313&vnp_ResponseCode=00&vnp_TmnCode=A82AXODV&vnp_TransactionNo=15493492&vnp_TransactionStatus=00&vnp_TxnRef=20260412165140159&vnp_SecureHash=f4d3fe040e8d5deb231a320d7cb86a776291073d266c16dbd30278fa184463e92f11b15918ab269e731b2d7507413c8f36b00e73044fa63d6a8c05b3677a3ae2",
+          "raw": "https://payshield.duckdns.org:8888/api/vnpay-ipn?vnp_Amount=50000000&vnp_BankCode=NCB&vnp_BankTranNo=VNP15493492&vnp_CardType=ATM&vnp_OrderInfo=Salary+advance+for+order%3A+20260412165140159&vnp_PayDate=20260412235313&vnp_ResponseCode=00&vnp_TmnCode=A82AXODV&vnp_TransactionNo=15493492&vnp_TransactionStatus=00&vnp_TxnRef=20260412165140159&vnp_SecureHash=f4d3fe040e8d5deb231a320d7cb86a776291073d266c16dbd30278fa184463e92f11b15918ab269e731b2d7507413c8f36b00e73044fa63d6a8c05b3677a3ae2",
           "protocol": "https",
           "host": [
-            "localhost"
+            "payshield",
+            "duckdns",
+            "org"
           ],
           "port": "8888",
           "path": [
@@ -441,18 +471,18 @@
         "type": "boolean"
       },
       {
-        "key": "redirect_uri",
-        "value": "https://oauth.pstmn.io/v1/callback",
-        "type": "string"
-      },
-      {
         "key": "accessTokenUrl",
-        "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/token",
+        "value": "https://payshield.duckdns.org:8444/realms/payshield-realm/protocol/openid-connect/token",
         "type": "string"
       },
       {
         "key": "authUrl",
-        "value": "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/auth",
+        "value": "https://payshield.duckdns.org:8444/realms/payshield-realm/protocol/openid-connect/auth",
+        "type": "string"
+      },
+      {
+        "key": "redirect_uri",
+        "value": "https://oauth.pstmn.io/v1/callback",
         "type": "string"
       },
       {

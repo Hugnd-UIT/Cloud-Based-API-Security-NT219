@@ -43,6 +43,7 @@ services:
       - client_certs:/tmpfs/certs/client
       - kong_certs:/tmpfs/certs/kong
       - waf_certs:/tmpfs/certs/waf
+      - opa_certs:/tmpfs/certs/opa
       - keycloak_certs:/tmpfs/certs/keycloak
       - nginx_certs:/tmpfs/certs/nginx
       - app_certs:/tmpfs/certs/app
@@ -50,7 +51,7 @@ services:
       - siem_certs:/tmpfs/certs/siem
 
     healthcheck:
-      test: ["CMD-SHELL", "test -f /tmpfs/certs/kong/server.crt && test -f /tmpfs/certs/waf/server.crt && test -f /tmpfs/certs/nginx/server.crt && test -f /tmpfs/certs/app/server.crt && test -f /tmpfs/certs/db/server.crt && test -f /tmpfs/certs/keycloak/server.crt && test -f /tmpfs/certs/siem/server.crt && test -f /tmpfs/certs/client/server.crt"]
+      test: ["CMD-SHELL", "test -f /tmpfs/certs/kong/server.crt && test -f /tmpfs/certs/waf/server.crt && test -f /tmpfs/certs/nginx/server.crt && test -f /tmpfs/certs/app/server.crt && test -f /tmpfs/certs/db/server.crt && test -f /tmpfs/certs/keycloak/server.crt && test -f /tmpfs/certs/opa/server.crt && test -f /tmpfs/certs/siem/server.crt && test -f /tmpfs/certs/client/server.crt"]
       interval: 5s
       timeout: 5s
       retries: 60
@@ -73,12 +74,13 @@ services:
       - --ssl-ca=/kms/ca.crt
       - --ssl-key=/tmpfs/certs/server.key
       - --ssl-cert=/tmpfs/certs/server.crt
-
+      - --early-plugin-load=keyring_file.so 
+      - --keyring_file_data=/var/lib/mysql-keyring/keyring
     volumes:
       - db_certs:/tmpfs/certs:ro
       - ../kms/ca.crt:/kms/ca.crt:ro
       - ./scripts/database-init.sql:/docker-entrypoint-initdb.d/init.sql
-
+      - payshield_mysql_keyring:/var/lib/mysql-keyring
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.0
@@ -95,18 +97,21 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KEYCLOAK_ADMIN=${KC_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
+      - KC_HTTPS_CLIENT_AUTH=none
       - KC_HTTPS_TRUST_STORE_TYPE=PKCS12
       - KC_HTTPS_TRUST_STORE_FILE=/kms/truststore.p12
       - KC_HTTPS_TRUST_STORE_PASSWORD=password
-      - KC_HTTPS_CERTIFICATE_FILE=/tmpfs/certs/server.crt
-      - KC_HTTPS_CERTIFICATE_KEY_FILE=/tmpfs/certs/server.key
+      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/certs/certificate.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/certs/private.key
+      - KC_HOSTNAME=payshield.duckdns.org
+      - KC_HOSTNAME_PORT=8444
 
-    command: start-dev
+    command: start --optimized --hostname-strict=false --https-client-auth=none
 
     volumes:
+      - ~/Cloud-Based-API-Security-NT219/zerossl_certs:/opt/keycloak/conf/certs:ro
       - keycloak_certs:/tmpfs/certs:ro
       - ../kms/truststore.p12:/kms/truststore.p12:ro
-
 
   app:
     build: .
@@ -130,6 +135,7 @@ services:
 
     volumes:
       - .:/var/www/html
+      - ../kms/ca.crt:/var/www/html/cert/ca.crt:ro
       - ../kms/ca.crt:/kms/ca.crt:ro
       - ../kms/client.crt:/kms/client.crt:ro
       - ../kms/client.key:/kms/client.key:ro
@@ -176,7 +182,7 @@ services:
       KONG_CLIENT_SSL_CERT_KEY: /tmpfs/certs/server.key
       KONG_LUA_SSL_TRUSTED_CERTIFICATE: /kms/ca.crt
       VAULT_TOKEN: "${VAULT_APP_TOKEN}"
-      KONG_PLUGINS: bundled
+      KONG_PLUGINS: bundled,pre-function
 
     command: >
       sh -c "
@@ -188,6 +194,7 @@ services:
 
     volumes:
       - ../gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro
+      - ../pdp:/usr/local/share/lua/5.1/kong/plugins/opa:ro
       - ../kms/ca.crt:/kms/ca.crt:ro
       - kong_certs:/tmpfs/certs:ro
 
@@ -198,6 +205,7 @@ services:
 
     ports:
       - "8888:8443"
+      - "80:80"
 
     depends_on:
       vault-agent-controller:
@@ -214,9 +222,10 @@ services:
 
     volumes:
       - ../gateway/waf.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
+      - ~/Cloud-Based-API-Security-NT219/zerossl_certs:/etc/nginx/zerossl_certs:ro
       - ../kms/ca.crt:/kms/ca.crt:ro
       - waf_certs:/tmpfs/certs:ro
-
+      - ~/Cloud-Based-API-Security-NT219/zerossl_challenge/.well-known/pki-validation:/usr/share/nginx/html/.well-known/pki-validation
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
@@ -231,6 +240,7 @@ services:
 
     environment:
       - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - "xpack.security.enabled=true"
       - "xpack.security.http.ssl.enabled=true"
       - "xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/server.key"
@@ -333,6 +343,7 @@ volumes:
   payshield_mysql_data:
   payshield_vault_data:
   payshield_siem_data:
+  payshield_mysql_keyring:
   client_certs:
     driver: local
     driver_opts: { type: tmpfs, device: tmpfs }
@@ -340,6 +351,9 @@ volumes:
     driver: local
     driver_opts: { type: tmpfs, device: tmpfs }
   waf_certs:
+    driver: local
+    driver_opts: { type: tmpfs, device: tmpfs }
+  opa_certs:
     driver: local
     driver_opts: { type: tmpfs, device: tmpfs }
   keycloak_certs:

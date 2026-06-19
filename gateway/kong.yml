@@ -24,10 +24,9 @@ services:
                   local auth = kong.request.get_header("Authorization")
                   if not auth or auth == "" then
                     return kong.response.exit(302, "Redirect to Keycloak", {
-                      ["Location"] = "https://localhost:8444/realms/payshield-realm/protocol/openid-connect/auth?response_type=code&client_id=payshield-app&scope=openid&redirect_uri=https%3A%2F%2Foauth.pstmn.io%2Fv1%2Fcallback&code_challenge=A_nlPiThaeFZWLUN26JhiEuclHPNfeqJDXIUGo5YM4I&code_challenge_method=S256"
+                      ["Location"] = "https://payshield.duckdns.org:8444/realms/payshield-realm/protocol/openid-connect/auth?response_type=code&client_id=payshield-app&scope=openid&redirect_uri=https%3A%2F%2Foauth.pstmn.io%2Fv1%2Fcallback&code_challenge=A_nlPiThaeFZWLUN26JhiEuclHPNfeqJDXIUGo5YM4I&code_challenge_method=S256"
                     })
                   end 
-
       - name: vnpay-ipn-route
         paths:
           - /api/vnpay-ipn
