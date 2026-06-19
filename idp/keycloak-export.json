@@ -410,48 +410,45 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
   "users" : [ {
-    "id" : "bebb6954-0e0f-47fc-893e-26afdf56626a",
-    "createdTimestamp" : 1775710687470,
+    "id" : "3686a0a1-4d95-4e10-b9de-746e61be04fa",
+    "createdTimestamp" : 1779897828441,
     "username" : "employee-example@payshield.com",
     "enabled" : true,
     "totp" : false,
     "emailVerified" : true,
-    "firstName" : "Hung",
-    "lastName" : "Nguyen",
     "email" : "employee-example@payshield.com",
     "credentials" : [ {
-      "id" : "124fd3bf-c4f3-462a-b3a7-a9f9639e5fd6",
+      "id" : "0e66b2c0-c0ba-481e-a7d3-2ee4775a5017",
       "type" : "password",
       "userLabel" : "My password",
-      "createdDate" : 1775710694468,
-      "secretData" : "{\"value\":\"N6d+a3WZzZSBTMijCLHkdcaeoQ2kW5hwDIQanHHquRo=\",\"salt\":\"tuxx5PmZ5KkoksO1/wdt3Q==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ "UPDATE_PASSWORD" ],
-    "realmRoles" : [ "employee" ],
-    "notBefore" : 0,
-    "groups" : [ ]
-  }, {
-    "id" : "f28d2b3f-03e8-4cd0-9a16-76770ce679fd",
-    "createdTimestamp" : 1775699696875,
-    "username" : "manager-example@payshield.com",
-    "enabled" : true,
-    "totp" : false,
-    "emailVerified" : true,
-    "firstName" : "Hung",
-    "lastName" : "Nguyen",
-    "email" : "manager-example@payshield.com",
-    "credentials" : [ {
-      "id" : "5157348b-e71d-40d4-ba5e-08867ee0e0ac",
-      "type" : "password",
-      "createdDate" : 1775699743420,
-      "secretData" : "{\"value\":\"SIAB4/bpxKqy4szAS0MWa8TxLKFlb0YsDURUZJKsDZg=\",\"salt\":\"x/NQgLVX7OZJN4aA5bqkUA==\",\"additionalParameters\":{}}",
+      "createdDate" : 1779897841024,
+      "secretData" : "{\"value\":\"B6/esgAEItJ4f13unElaR+AQWLTNhmjYjwFhicK+h4w=\",\"salt\":\"BeJ+4GJyIZ5qcnUEGBOP1w==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "manager" ],
+    "realmRoles" : [ "default-roles-payshield-realm", "employee" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "0d2617d6-7014-4ddc-9bba-cac4ab0e5320",
+    "createdTimestamp" : 1779897798283,
+    "username" : "manager-example@payshield.com",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "email" : "manager-example@payshield.com",
+    "credentials" : [ {
+      "id" : "4b3e43f1-54d0-4e92-b8e1-93c614b34d07",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1779897813136,
+      "secretData" : "{\"value\":\"pct0M6jLuV/KstKsDoB9n1KViaIzHx1u9JY/JIBMRFo=\",\"salt\":\"Cy5+JAvaJYaZnNNx044n5g==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-payshield-realm", "manager" ],
     "notBefore" : 0,
     "groups" : [ ]
   }, {
@@ -599,16 +596,16 @@
     "clientId" : "payshield-app",
     "name" : "",
     "description" : "",
-    "rootUrl" : "https://localhost:8888",
-    "adminUrl" : "https://localhost:8888",
+    "rootUrl" : "https://payshield.duckdns.org:8443",
+    "adminUrl" : "https://payshield.duckdns.org:8443",
     "baseUrl" : "",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "HoHjwBR7aSEJtzQ1DylcppVxZ4CWnVmQ",
-    "redirectUris" : [ "https://localhost:8888/*", "https://oauth.pstmn.io/v1/callback" ],
-    "webOrigins" : [ "+" ],
+    "secret" : "gTPf9LYwK20ngQcRSd9mTiCxmXLKze7n",
+    "redirectUris" : [ "https://payshield.duckdns.org:8443/*", "https://oauth.pstmn.io/v1/callback" ],
+    "webOrigins" : [ "*" ],
     "notBefore" : 0,
     "bearerOnly" : false,
     "consentRequired" : false,
@@ -620,7 +617,7 @@
     "frontchannelLogout" : true,
     "protocol" : "openid-connect",
     "attributes" : {
-      "client.secret.creation.time" : "1775699801",
+      "client.secret.creation.time" : "1779897853",
       "login_theme" : "keycloak",
       "post.logout.redirect.uris" : "+",
       "oauth2.device.authorization.grant.enabled" : "false",
@@ -633,7 +630,7 @@
       "client_credentials.use_refresh_token" : "false",
       "acr.loa.map" : "{}",
       "require.pushed.authorization.requests" : "false",
-      "tls.client.certificate.bound.access.tokens" : "false",
+      "tls.client.certificate.bound.access.tokens" : "true",
       "display.on.consent.screen" : "false",
       "pkce.code.challenge.method" : "S256",
       "token.response.type.bearer.lower-case" : "false"
@@ -1320,7 +1317,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper" ]
       }
     }, {
       "id" : "956940d8-220d-4b7a-a753-963f0a731e74",
@@ -1329,7 +1326,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "9f9b65be-6323-440c-b8de-832e4b839190",
@@ -1355,8 +1352,8 @@
       "providerId" : "aes-generated",
       "subComponents" : { },
       "config" : {
-        "kid" : [ "48d969bb-d751-450a-96aa-ed691e23fd8d" ],
-        "secret" : [ "4EeobAOjN1rufWsuBs8NiA" ],
+        "kid" : [ "a0f041ed-7fd0-4476-9e3c-e4b7262b3a9a" ],
+        "secret" : [ "YJhX-tbVy5chvWX0HyeNog" ],
         "priority" : [ "100" ]
       }
     }, {
@@ -1365,9 +1362,9 @@
       "providerId" : "ecdsa-generated",
       "subComponents" : { },
       "config" : {
-        "ecdsaPublicKey" : [ "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEDxZPJvKyRw/qrl/L/qcLVZvmZrPq6WkVdB0WdKbAgXKtJhfCmWbQW3fflanPWvOTycTr+309tIcflEM+RPxJaA==" ],
+        "ecdsaPublicKey" : [ "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+pyCG+2urIKw1QFYI/Waqw5Apw3qNluCWO3ljy7hdFZ3i4BI6mteGN+uoj1LB+c9FPwx5Pp81Mbi9/+/h6HR8w==" ],
         "ecdsaEllipticCurveKey" : [ "P-256" ],
-        "ecdsaPrivateKey" : [ "MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCAn/H5UG9HOeGZwIhf6pAoUPUZjCZKqSLJHY3HzqTBJkw==" ],
+        "ecdsaPrivateKey" : [ "MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCBiAfL6mZvb0s7ZE0nGN8DwTgWMIn6LBWn+4/rjcXICqQ==" ],
         "active" : [ "true" ],
         "priority" : [ "200" ],
         "enabled" : [ "true" ]
@@ -1378,8 +1375,8 @@
       "providerId" : "hmac-generated",
       "subComponents" : { },
       "config" : {
-        "kid" : [ "ca2a08c2-523e-48cf-b6a7-1318807bde28" ],
-        "secret" : [ "dgzBAj1Qhir-l5ynpUbWlZb07lYq_NDNfmI29uyyENi2848wZV6PKZVPUybngn0YSLceZNVX2NVzBSC5JSQ5Jg" ],
+        "kid" : [ "091f1813-8057-4fe7-8563-c49106f11d9c" ],
+        "secret" : [ "Cz3HF9WcwlNulBbQLfmQcEWvBxacO-c4WGx4CPSy1z9kvW7ybtq6d_FqyPUTwrTtTGnWkvcT0cjYC-JLRxfVyw" ],
         "priority" : [ "100" ],
         "algorithm" : [ "HS256" ]
       }
@@ -1927,7 +1924,7 @@
     "oauth2DeviceCodeLifespan" : "600",
     "parRequestUriLifespan" : "60",
     "clientSessionMaxLifespan" : "0",
-    "frontendUrl" : "https://localhost:8444",
+    "frontendUrl" : "https://payshield.duckdns.org:8444",
     "acr.loa.map" : "{}"
   },
   "keycloakVersion" : "23.0.0",
